@@ -1,0 +1,4370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Marlow Media – Dashboard</title>
+<style>
+:root{
+  --bg:#0f1115;
+  --panel:#171923;
+  --muted:#8b93a7;
+  --text:#e6e9f2;
+  --brand:#4f7cff;
+  --ok:#18c964;
+  --warn:#ffd166;
+  --danger:#ff5b5b;
+  --chip:#222737;
+  --border:#293047;
+  --card:#11131a;
+  --shadow:0 12px 30px rgba(0,0,0,.35);
+  --radius:16px;
+  --radius-sm:12px;
+  --radius-xs:8px;
+  --gap:14px;
+  --cellh:120px;
+
+  /* Limit the dashboard width to prevent horizontal overflow. This cap
+     ensures content fits on most screens and eliminates the need for
+     sideways scrolling. */
+  --max-width: 1200px;
+}
+
+/* Light theme overrides. When the body has the `light` class, these
+   variables are swapped in to produce a bright appearance. Only the
+   colors are changed; spacing and sizing remain the same. */
+body.light{
+  --bg:#fafbff;
+  --panel:#ffffff;
+  --card:#f7f8fc;
+  --chip:#f1f3fa;
+  --border:#d5d9e8;
+  --muted:#5f6c91;
+  --text:#262e46;
+  --brand:#4f7cff;
+  --ok:#0f7c47;
+  --warn:#b58b00;
+  --danger:#b83232;
+}
+
+/* Ensure form controls use the primary text color for entered text.
+   Placeholders remain muted for contrast. */
+input, textarea, select {
+  color: var(--text) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
+}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html,body{
+  overflow-x: hidden;
+}
+
+/* Restrict the main screen container to the maximum width and center it */
+/* Expand the main screen container to fill the viewport width and
+   remove auto‑centering. This eliminates side padding on the overview
+   calendars and weekly lists. */
+#screen{
+  max-width: none;
+  width:100%;
+  margin:0;
+}
+body{
+  margin:0;font:500 15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica Neue,Arial;
+  color:var(--text);background:var(--bg);
+  transition:background 0.3s,color 0.3s;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* Darken form input text. The default rule inherits the muted color from
+   parent containers, causing typed text to appear dim. Force inputs
+   (including selects) to use the primary text colour and lighten
+   placeholders to use the muted colour. */
+input, select, textarea{color:var(--text);}
+input::placeholder, textarea::placeholder{color:var(--muted);opacity:1;}
+
+/* Ensure form controls always display high‑contrast text. Some inputs were
+   inheriting muted colours or browser defaults, resulting in very light
+   grey text on dark backgrounds. Use !important to override any
+   conflicting rules and make the entered text fully readable. */
+input, select, textarea {
+  color: var(--text) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--muted) !important;
+  opacity: 1;
+}
+a{color:var(--brand);text-decoration:none}
+/* Expand the dashboard to use the available viewport width. Previously the
+   application was constrained to 1180px which made the UI feel cramped.
+   Allow it to grow to the full width while keeping a comfortable margin. */
+#app{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:0;
+}
+.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.hstack{display:flex;gap:10px;align-items:center}
+.topbar .hstack:last-child{flex-wrap:wrap;gap:10px}
+.brand{
+  font-weight:800;
+  letter-spacing:.4px;
+  /* Increase the brand size for better prominence. Clients asked for a big
+     text instead of a logo. */
+  font-size:28px;
+}
+.badge{padding:5px 10px;border-radius:999px;background:var(--chip);color:#c9d1ff;border:1px solid var(--border);}
+select, input[type="text"], input[type="number"], input[type="date"], input[type="time"], textarea{
+  background:#0c0e13;border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none;min-width:0;
+}
+
+/* Override form control colours in modals and cards for maximum contrast.
+   Without these rules, some inputs inherited a muted grey colour from
+   surrounding containers, making typed text hard to see on dark
+   backgrounds. */
+.modal input,
+.modal select,
+.modal textarea,
+.card.deliverable input,
+.card.deliverable textarea,
+.card.deliverable select {
+  color: var(--text) !important;
+  background: var(--card) !important;
+}
+.modal option,
+.card.deliverable option {
+  color: var(--text);
+  background: var(--panel);
+}
+textarea{min-height:110px;resize:vertical}
+/* Use dark backgrounds on all form controls for better contrast with
+   the light text. Without this rule some inputs remained light with
+   dark text, resulting in poor readability. */
+/* Apply dark backgrounds and high contrast text to almost all inputs,
+   selects and textareas throughout the app. Exclude checkboxes,
+   radios and file inputs from this rule. Without this, some fields
+   inherit a light background and muted text, resulting in poor
+   readability (e.g. New lead form and employee add form). */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea{
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  /* Ensure inputs fit nicely within their containers */
+  border-radius: 6px;
+  padding: 6px;
+}
+/* Reduce the minimum height for textareas inside deliverable cards so
+   that the front of each card remains compact. This helps avoid
+   extremely tall cards, particularly in editing and filming modals. */
+.card.deliverable textarea{
+  min-height:72px;
+}
+.btn{background:var(--brand);border:0;color:#fff;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:var(--shadow)}
+.btn.secondary{background:#23283a;color:#cbd5ff;border:1px solid var(--border);box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:#cbd5ff;box-shadow:none}
+.btn.small{padding:6px 10px;border-radius:10px}
+.btn.danger{background:var(--danger)}
+
+/* Emphasize small action buttons in sales table. Increase contrast of
+   icons and text so that follow‑up, won and delete actions are easier
+   to see on dark backgrounds. */
+.btn.small.ok, .btn.small.danger{
+  font-weight:600;
+  color:#fff;
+  padding:4px 8px;
+}
+.tabs{display:flex;gap:8px;margin:16px 0 8px}
+.tab{padding:10px 14px;border-radius:12px;background:#141827;border:1px solid var(--border);cursor:pointer}
+.tab.active{background:#1b2033;color:#fff;border-color:#3b4770}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+/* Make three‐column grids responsive. Auto–fit columns will wrap on narrow
+   screens and expand evenly on wider screens. */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px,1fr));gap:16px}
+/* Styling for the durations fields in settings. Each duration input stacks its
+   label above the input for clarity and consistency. */
+.durations-grid .dur-field{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.durations-grid .dur-label{
+  font-size:14px;
+  font-weight:600;
+  color:var(--muted);
+}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 12px 0;font-size:16px;opacity:.9}
+.kv{display:flex;gap:10px;align-items:center}
+.kv .k{color:var(--muted);width:140px}
+.row{display:flex;gap:12px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--chip);border:1px solid var(--border);padding:6px 10px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.chip.active{background:#233057;color:#d6e0ff;border-color:#425aa6}
+.calendar{margin-top:10px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px 8px}
+.cal-header .title{font-weight:700}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.cal-cell{background:#11131a;border:1px solid #202436;border-radius:12px;height:var(--cellh);padding:8px;display:flex;flex-direction:column;gap:6px;position:relative;overflow-y:auto;overflow-x:hidden}
+.cal-cell .d{position:absolute;top:6px;left:8px;color:#9aa3b6;font-size:12px}
+.cal-cell.today{outline:2px solid var(--brand)}
+.task{background:#0c0f19;border:1px solid #2a3350;border-radius:10px;padding:8px;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.task .dot{width:8px;height:8px;border-radius:999px;background:var(--brand);opacity:.9}
+.task .name{flex:1;font-weight:700;white-space:normal}
+.task .meta{font-size:12px;color:#b9c3da}
+.task .assignee{font-size:12px;background:#1a1f33;border:1px solid #2e3a64;padding:2px 8px;border-radius:999px}
+.task .actions{display:flex;gap:6px}
+.iconbtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:#1a1d2a;color:#d1d6f6;display:grid;place-items:center;cursor:pointer}
+.iconbtn.ok{border-color:#2b6648;color:#baf3d0}
+.iconbtn.warn{border-color:#6a5b2d;color:#ffe8b0}
+.iconbtn.danger{border-color:#6b2b36;color:#ffb3b3}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.modal{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px;
+  /* Allow the modal to grow wider on larger viewports so long forms
+     (such as the Add task/event dialog) have enough space. The 630px
+     maximum felt cramped when multiple fields were displayed inline. */
+  /* Reduce the maximum modal width for a more compact appearance. A
+     narrower modal makes the add/edit dialogs feel less like a
+     full-screen overlay and more like a floating card. */
+  max-width:600px;
+  width:100%;
+  box-shadow:var(--shadow)
+}
+.modal h3{margin:0 0 12px 0}
+hr.sep{border:0;border-top:1px solid var(--border);margin:12px 0}
+.small{font-size:12px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:10px}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-bottom:1px solid #21263a;padding:10px;text-align:left}
+.table td,.table th{color:var(--text);}
+
+/* Prevent action buttons in the leads table from wrapping to new lines. Without
+   this rule the +7d/Won/Delete buttons stack vertically when the table
+   container shrinks, causing layout issues. */
+.table td:last-child{
+  white-space:nowrap;
+}
+.table td:last-child .btn{
+  margin-right:4px;
+}
+.right{margin-left:auto}
+.warn{color:#ffd166}
+.ok{color:#29d685}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.hidden{display:none !important}
+.client-dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:middle}
+  /* Add button inside calendar cells. It sits in the top-right corner and
+     provides a quick way to create a new task or piece of content on
+     that day. */
+.cal-cell .add-btn{
+  position:absolute;
+  top:6px;
+  right:8px;
+  font-size:12px;
+  color:var(--brand);
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+/* Highlight alternating 14‑day intervals on client calendars. The first
+   two weeks after onboarding are tinted, then the next two weeks are
+   clear, and so on. A subtle tint of the brand colour helps users
+   distinguish content and filming phases without overwhelming the
+   schedule. */
+.cal-cell.highlight{
+  background: rgba(79, 124, 255, 0.08);
+}
+
+/* Days of week header for calendars */
+.cal-days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  padding:0 4px;
+  margin-bottom:4px;
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+}
+
+/* Color selector swatches for clients. A selected swatch gets a
+   border indicating the active choice. */
+.color-swatch{border:2px solid transparent;transition:border-color .2s;}
+.color-swatch.selected{
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand);
+}
+.section-title{font-weight:800;margin:16px 0 8px 0}
+/* revenue bar chart */
+  /*
+   * The revenue bar chart canvas was previously set to a very small height and lacked
+   * any numeric context for the underlying values. Make the canvas taller so the
+   * bars have more visual breathing room and are easier to differentiate. Labels
+   * are drawn dynamically by JavaScript (see drawRevenue()) and will sit just
+   * above each bar, so reserve extra vertical space here. The rest of the styling
+   * is unchanged.
+   */
+  .canvas{
+    width:100%;
+    height:200px;
+    background:#0d111a;
+    border:1px solid var(--border);
+    border-radius:12px;
+    position:relative;
+    overflow:hidden
+  }
+
+  /* Deliverable card styling. Each deliverable uses a 3D flip
+     container so front/back sides animate smoothly when toggled. The
+     perspective on the wrapper creates depth. */
+  .card.deliverable{
+    perspective: 1200px;
+    overflow: visible;
+    /* Increase the minimum height so that long captions and media previews on
+       the back of the card have ample vertical space. When cards are
+       flipped, the larger height prevents text overlapping the input
+       fields. */
+    min-height: 600px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+  }
+  .card.deliverable .inner{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s ease;
+    transform-style: preserve-3d;
+  }
+  .card.deliverable.flipped .inner{
+    transform: rotateY(180deg);
+  }
+  .card.deliverable .front,
+  .card.deliverable .front,
+  .card.deliverable .back{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    /* Allow the side to grow with its content rather than forcing a
+       fixed height. Use inherit so that the card's min-height is
+       respected but taller content can expand beyond it. */
+    min-height:inherit;
+    height:auto;
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    background:var(--card);
+    border-radius:var(--radius-sm);
+    /* Enable scrolling on the inner sides so long content doesn’t overflow
+       the parent card. When a user flips a card with a very long
+       caption or preview, they can scroll within the card to read
+       everything without overlapping the form inputs. */
+    overflow-y:auto;
+    padding:12px;
+    box-sizing:border-box;
+}
+  .card.deliverable .back{
+    transform: rotateY(180deg);
+  }
+  .card.deliverable label{
+    display:flex;
+    flex-direction:column;
+    font-size:12px;
+    gap:2px;
+    /* Add bottom margin so labels don't butt up against each other */
+    margin-bottom:6px;
+  }
+  .card.deliverable .small{
+    font-size:12px;
+    color:var(--muted);
+    /* Separate the header from the rest of the card */
+    margin-bottom:6px;
+    display:block;
+  }
+  .trash-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    /* Increase z-index so the trash button stays above other elements */
+    z-index:100;
+    font-size:14px;
+    cursor:pointer;
+    background:transparent;
+    border:none;
+    color:var(--danger);
+  }
+
+  /* Provide spacing on the inner sides of deliverable cards. Inputs fill
+     the available width for a clean form layout. */
+  .card.deliverable .front,
+  .card.deliverable .back{
+    padding:12px;
+  }
+  .card.deliverable textarea,
+  .card.deliverable input[type="text"],
+  .card.deliverable input[type="url"],
+  .card.deliverable input[type="file"],
+  .card.deliverable input[type="number"]{
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:6px;
+    color:var(--text);
+  }
+
+  /* Global placeholder color: lighten text in empty fields to be
+     visible against dark inputs. Without this rule the default
+     placeholder can appear extremely faint. */
+  ::placeholder{
+    color: var(--muted);
+  }
+
+  /* Instagram-style post components used on the back of deliverable cards */
+  .post{
+    background:var(--panel);
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .post-header{
+    display:flex;
+    align-items:center;
+    padding:6px 8px;
+  }
+  .post-header .avatar{
+    width:32px;
+    height:32px;
+    border-radius:16px;
+    background-size:cover;
+    background-position:center;
+    margin-right:8px;
+  }
+  .post-header .meta .name{
+    font-weight:bold;
+    font-size:12px;
+    color:var(--text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .post-header .meta .handle{
+    font-size:11px;
+    color:var(--muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .post-media{
+    position:relative;
+    width:100%;
+    padding-bottom:56%;
+    background:var(--chip);
+  }
+  .post-media video{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border:none;
+  }
+  .post-caption{
+    padding:8px;
+    font-size:13px;
+    color:var(--text);
+  }
+  .placeholder{
+    width:100%;
+    height:150px;
+    background:var(--chip);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  /* Ensure wide containers never exceed the viewport. Limiting the max
+     width of key components prevents horizontal overflow when content
+     grows on smaller screens. */
+  #app, .calendar, .cal-grid, .card, .durations-grid {
+    max-width: 100%;
+  }
+
+  /* Light theme overrides for form controls: inputs, selects and
+     textareas in light mode should use a white background and dark
+     text for legibility. */
+  body.light input,
+  body.light select,
+  body.light textarea{
+    background:#fff;
+    color:#262e46;
+    border:1px solid var(--border);
+  }
+.canvas .bar{position:absolute;bottom:0;width:24px;background:#2a4bff;border-radius:6px 6px 0 0;opacity:.9}
+.canvas .label{position:absolute;bottom:6px;left:6px;font-size:12px;color:#aeb7d0}
+.switch{position:relative;width:46px;height:26px;background:#1a2132;border-radius:999px;border:1px solid var(--border);}
+.switch input{display:none}
+.switch span{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:999px;background:#c1c7de;transition:left .2s}
+.switch input:checked + span{left:22px;background:#5be37f}
+.inline{display:inline-block}
+.footer{margin:20px 0 10px 0;color:#96a0bb;font-size:12px;opacity:.85}
+@media (max-width:990px){
+ .grid3{grid-template-columns:1fr}
+ :root{--cellh:140px}
+}
+/* Mini post card used within the content calendar. Mirrors the
+   deliverable preview styling but scaled down to fit calendar cells. */
+.post-card .post-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.post-card .avatar{width:24px;height:24px;border-radius:50%;background-size:cover;background-position:center}
+.post-card .meta .name{font-weight:600;font-size:12px;line-height:1}
+.post-card .meta .handle{font-size:10px;color:var(--muted);line-height:1}
+.post-card .post-media{margin-top:4px}
+.post-card .post-caption{font-size:12px;margin-top:4px;word-break:break-word}
+/* Add card for creating new deliverables */
+.add-card{
+  border:2px dashed var(--border);
+  border-radius:12px;
+  background:rgba(255,255,255,0.02);
+  color:var(--muted);
+  cursor:pointer;
+  min-height:180px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background 0.2s;
+}
+.add-card:hover{
+  background:rgba(255,255,255,0.05);
+}
+.add-card .plus{
+  font-size:14px;
+  color:var(--text);
+}
+/* Make scheduled post previews more compact within calendar cells */
+.post-card{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--panel);
+  padding:4px;
+  max-height:140px;
+  overflow:hidden;
+  font-size:12px;
+}
+.post-card .post-media video,
+.post-card .post-media img,
+.post-card .post-media .placeholder{
+  width:100%;
+  height:auto;
+  max-height:60px;
+}
+.post-card .post-caption{
+  font-size:10px;
+}
+
+/* Responsive layout for mobile screens. On narrow viewports, stack
+   components vertically, allow horizontal scrolling on tab bars and
+   make deliverable cards occupy full width. These rules improve
+   readability and usability on phones. */
+@media (max-width: 600px) {
+  .topbar, .tabs {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .topbar .hstack:last-child {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .card.deliverable {
+    flex: 0 0 100%;
+    min-width: 100%;
+  }
+  .calendar .cal-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  /* Ensure chips wrap nicely on small screens */
+  .chips {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  /* Compact the client name heading on small screens */
+  .card h3 {
+    font-size: 14px;
+  }
+}
+</style>
+<!-- Firebase JS SDKs for compatibility. These libraries enable Firebase Auth and
+     Firestore in non-module environments. Replace the version numbers as
+     needed when upgrading. -->
+<!-- Supabase client (JSON store only; no new login) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.SUPABASE_URL = "https://ttwpbmfvgfyjavejnelc.supabase.co";
+  window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0d3BibWZ2Z2Z5amF2ZWpuZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2MTYwMDYsImV4cCI6MjA3MjE5MjAwNn0.o84ycMmWUBkoZpNim2viy4IFjQ00Tb8zwRahNCoOERk";
+  window.WORKSPACE_ID = "marlow-media-prod";
+  window.supa = window.supabase && window.supabase.createClient
+    ? window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY)
+    : null;
+</script>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="hstack">
+    <!-- Removed beta badge now that site is production ready -->
+    <!-- <div class="badge">Beta</div> -->
+      <div class="brand">Marlow Media Calendar</div>
+      <div class="small" id="saveStatus"></div>
+    </div>
+    <div class="hstack">
+      <label class="small">Viewing as</label>
+      <select id="viewAs"></select>
+      <button class="btn small secondary" id="backupBtn">Backup</button>
+      <label class="btn small ghost inline" for="restoreInput">Restore</label>
+      <input id="restoreInput" type="file" accept="application/json" class="hidden" />
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="screen"></div>
+  <div class="footer">All data is stored locally in your browser (localStorage). Use Backup/Restore to move between computers or to keep a safe copy.</div>
+</div>
+
+<!-- modals -->
+<div class="modal-backdrop" id="modalBackdrop">
+ <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/*** util ***/
+const $ = (sel, el=document)=>el.querySelector(sel);
+const $$=(sel, el=document)=>Array.from(el.querySelectorAll(sel));
+// Format a date string in the user's local timezone. The original
+// implementation used Date.toISOString() which always returns the
+// value in UTC. This caused the dashboard to display the wrong day
+// (e.g. one day behind) for users in the America/New_York timezone.
+// Convert the incoming date to a locale string in the target
+// timezone and then parse it back to a Date object so that
+// toISOString() will reflect the correct local date. Finally slice
+// the ISO string to keep only the YYYY‑MM‑DD portion.
+const fmtDate = (d) => {
+  // Normalize the supplied date into a plain Date instance. Accept
+  // strings or Date objects. If d is falsy or invalid, return an empty
+  // string to avoid throwing. Previously we used toLocaleString with a
+  // timezone, which could shift the date when converting between
+  // locales. Instead, extract the year, month and day directly and
+  // construct a new Date at midnight local time. This avoids DST
+  // issues and ensures fmtDate(parseDate(x)) === x for valid ISO
+  // strings. Finally convert to ISO and take the first 10 chars.
+  if(!d) return '';
+  const dt = (d instanceof Date) ? d : new Date(d);
+  if(!(dt instanceof Date) || isNaN(dt.getTime())) return '';
+  const localMidnight = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+  return localMidnight.toISOString().slice(0,10);
+};
+const parseDate = s => { const [y,m,dd]=s.split('-').map(Number); return new Date(y, m-1, dd); };
+
+// Convert a variety of date inputs into a valid Date object. The existing
+// `parseDate` helper only handles strings in YYYY-MM-DD format. However
+// client onboarding dates and lead win dates may come from native
+// date inputs or stored ISO strings with time components (e.g.
+// "2025-08-29T00:00:00.000Z"). In these cases `parseDate` would
+// return an invalid date because splitting on hyphens produces a
+// trailing time segment that cannot be parsed to a number. This utility
+// accepts either a Date instance or any parsable date string and
+// gracefully falls back to the built‑in Date constructor when
+// `parseDate` fails. If the resulting date is invalid, null is
+// returned.
+function toDate(val){
+  if(!val) return null;
+  if(val instanceof Date){
+    return isNaN(val.getTime()) ? null : val;
+  }
+  // First attempt to parse as YYYY‑MM‑DD
+  let d = parseDate(val);
+  if(d instanceof Date && !isNaN(d.getTime())) return d;
+  // Fallback to native Date parsing for ISO strings and other formats
+  d = new Date(val);
+  return (d instanceof Date && !isNaN(d.getTime())) ? d : null;
+}
+// Return today's date in YYYY‑MM‑DD. Allow overriding via state.todayOverride
+// so that the owner can manually adjust the 'current' date from settings.
+const todayStr = () => {
+  try {
+    // If state has a todayOverride defined, use it. Parse and format to
+    // ensure consistency with timezone handling. When the override is
+    // cleared (empty string or null), fall back to the current date.
+    const ov = (window.state && window.state.todayOverride) ? window.state.todayOverride : null;
+    if(ov){
+      // Accept the override as an ISO string (YYYY‑MM‑DD). Format
+      // through fmtDate/parseDate to ensure the same local timezone
+      // handling as other dates in the app.
+      return fmtDate(parseDate(ov));
+    }
+  } catch(e){}
+  return fmtDate(new Date());
+};
+const uid = ()=>Math.random().toString(36).slice(2,10);
+const deepClone = o=>JSON.parse(JSON.stringify(o));
+const range = (n)=>Array.from({length:n}, (_,i)=>i);
+// Add n days to a date or date string. Accepts either a string in
+// YYYY‑MM‑DD format or a Date object. Returns a formatted date
+// string using fmtDate to ensure proper timezone handling. Previously
+// this function only accepted strings, causing parseDate to fail
+// when a Date object was passed (e.g. when calling addDays with
+// parseDate(...) directly). Support both types to avoid Invalid
+// Date errors.
+const addDays = (s, n) => {
+  let base;
+  if(s instanceof Date){
+    base = s;
+  } else {
+    // If s is a string, parse it. Otherwise attempt to construct a
+    // Date from it directly (covers unexpected formats).
+    base = parseDate(s);
+    if(!(base instanceof Date) || isNaN(base.getTime())){
+      base = new Date(s);
+    }
+  }
+  const newDate = new Date(base.getTime() + n * 86400000);
+  return fmtDate(newDate);
+};
+
+function download(name, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+  a.download = name;
+  a.click();
+}
+
+/*** data ***/
+const DEFAULT = {
+  // Do not set a default current user. A login prompt will
+  // appear on first load to let each employee pick their profile.
+  currentUserId: null,
+  users: {
+    "u-OWNER": { id:"u-OWNER", name:"Owner (You)", role:"owner", skills:["script","film","photo","edit","website","emailphone","sales"], days:{Sun:1,Mon:1,Tue:1,Wed:1,Thu:1,Fri:1,Sat:1}, hoursPerDay:12, start:"09:00", password:"owner1" },
+    "u-RYAN":   { id:"u-RYAN", name:"Ryan Hatfield", role:"employee", skills:["script","film","photo","edit"], days:{Sun:0,Mon:1,Tue:1,Wed:1,Thu:1,Fri:0,Sat:0}, hoursPerDay:8, start:"09:00", password:"ryan1" }
+  },
+  durations: {
+    kickoff:1, monthlyCall:.5,
+    loginsText:.25, loginsCall:.5,
+    influencerFind:2, influencerConfirm:.25, influencerShoot:4,
+    scriptingHour:1, editingPer4:3,
+    photoPerHour:1,
+    posting:1,
+    websitePlan:1, websiteCapture:4, websiteBuild:8, websiteQA:2, websitePublish:1, websiteSend:.5,
+    emailSetup:1, emailSchedule:.5, emailReport:.5,
+    phoneSetup:1
+  },
+  prices: { none:0, trial:1500, mini:2500, medium:3500, large:4500, website:500 },
+  commissionPct: 0.10,
+  // Persist the preferred theme. "dark" is default but can be toggled
+  // to "light" from the Settings page. Stored in localStorage so the
+  // dashboard remembers your preference on reload.
+  theme: "dark",
+  clients: {},
+  leads: [],
+  tasks: [], // {id, clientId, name, date, start, duration, type, assigneeId, done=false}
+  archives: {} // clientId -> [{name, date, assigneeId}]
+};
+
+// Use a versioned storage key. Changing this key will force the app to
+// ignore any data saved under older versions. This is helpful when
+// significant data model changes occur that could break revenue
+// calculations on legacy datasets. See user report about phantom
+// revenue appearing across months; using a new key resets the data
+// store for this updated version of the dashboard. If you wish to
+// migrate old data, use the Backup/Restore functionality.
+// Bump the storage key to isolate this version of the dashboard from
+// prior builds. Using a new key prevents stale data from older
+// versions (e.g. clients with incorrect package labels) from
+// polluting the revenue calculations. See user feedback about
+// lingering revenue from old data.
+// Bump the storage key to force a fresh data snapshot. Older versions
+// of the dashboard stored contract lengths and package identifiers in
+// inconsistent ways, which can poison the new logic. Changing the
+// STORE_KEY ensures localStorage from previous versions does not
+// interfere with this build. If you need to preserve old data, use
+// the Backup/Restore feature before switching to this version.
+// Bump the storage key again to ensure a fresh data snapshot for this
+// iteration. Changing the key invalidates old localStorage entries
+// associated with prior versions (v5, v6, v7, etc.) and avoids
+// lingering tasks or payments that could interfere with the new
+// payment scheduling logic. See user complaints about phantom
+// revenue persisting across months.
+// Update the storage key to v12 to invalidate existing localStorage
+// data from earlier test runs. This ensures the dashboard starts
+// fresh without pre‑seeded clients when reloaded after this patch.
+// Bump the storage key to invalidate prior cached data. This forces
+// a fresh state the next time the app loads so that old clients
+// created under previous versions do not persist. See user report
+// about stale sample clients.
+// Bump the store key whenever the data schema changes or when we
+// want to force users to start with a fresh set of clients. This
+// ensures stale data from older versions of the dashboard does not
+// persist across reloads. See user feedback about seeing old
+// revenue bars despite schedule fixes.
+// Bump the STORE_KEY to force a fresh localStorage state.  Each
+// increment here resets the dashboard data so that stale clients,
+// tasks and revenue from prior iterations don't carry over.  If you
+// encounter unexpected data persisting across reloads, incrementing
+// this key will start with a clean slate.
+// Bump the store key to invalidate localStorage and ensure fresh state
+// Bump the STORE_KEY to invalidate old cached data and start with a
+// completely fresh state.  This ensures that lingering tasks from
+// previous versions (which may have scheduled payments incorrectly)
+// do not appear in the new revenue chart.
+// Fix the storage key at a new version to avoid future accidental resets.  Do not
+// increment this key again unless the data schema changes in a way that is
+// incompatible with previous versions.  If the key is changed, existing
+// localStorage entries will be ignored unless migrated (see migration logic
+// below).  Previously, the dashboard bumped this key on each release which
+// inadvertently cleared user data.  We now freeze it at v23 and migrate
+// older versions on first load.
+const STORE_KEY = "marlow.dashboard.v23";
+
+/* --------------------------------------------------------------------------
+ * Firebase integration
+ *
+ * To enable cloud persistence across devices and users, this dashboard can
+ * optionally save and load state from a remote Firestore database.  Provide
+ * your own Firebase project configuration below.  You can obtain these
+ * values from the Firebase console after creating a project.  Without
+ * configuration the dashboard will fall back to localStorage only.
+ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCaIF2is5_swIcz-QEogWRnE2OJX0xgaZc",
+  authDomain: "marlow-media-calendar.firebaseapp.com",
+  projectId: "marlow-media-calendar",
+  // Correct the storage bucket value.  When using the Firebase config
+  // object you must provide the canonical bucket name (ending in
+  // .appspot.com).  Using the firebasestorage.app host here will
+  // prevent the Firestore client from connecting correctly and
+  // produce HTTP 400 errors.
+  storageBucket: "marlow-media-calendar.appspot.com",
+  messagingSenderId: "664519075124",
+  appId: "1:664519075124:web:6380ee0e1ddb07b3c6f161"
+};
+// Initialize Firebase if config values are provided.  Surround with a try/catch
+// to avoid runtime errors when the Firebase SDK has not been loaded or when
+// configuration is incomplete.
+let db = null;
+try {
+  if (typeof firebase !== 'undefined' && firebase && firebase.apps?.length === 0) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  // Use the compatibility API to simplify access to Firestore and Auth.  If
+  // the project has not been configured this will remain null and remote
+  // persistence will be skipped.
+  db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null;
+  // When running on certain networks (e.g. behind firewalls or on some
+  // enterprise Wi‑Fi), the Firestore Web SDK may fail to establish a
+  // streaming RPC and fall back to HTTP 400 errors.  Enabling
+  // experimentalAutoDetectLongPolling instructs the client to detect
+  // when long‑polling should be used instead of the default WebChannel
+  // transport.  This mitigates "WebChannelConnection RPC 'Write'
+  // stream ... transport errored" issues observed during initial
+  // setup.  See: https://firebase.google.com/docs/firestore/solve-rpc-error#web
+  if (db) {
+    try {
+      db.settings({ experimentalAutoDetectLongPolling: true });
+    } catch (err) {
+      console.warn('Could not enable long polling for Firestore:', err);
+    }
+  }
+  // For local‑only mode, force the database reference to null to disable all
+  // Firestore reads and writes.  This prevents remote state from being
+  // loaded and ensures that all data stays in localStorage.  See the
+  // modifications below to loadRemoteState() and saveRemoteState() for
+  // complete disablement of remote persistence.
+  db = null;
+} catch (e) {
+  console.warn('Firebase initialization skipped:', e);
+}
+
+// Persist the current state to Firestore under the currentUserId.  This
+// function is a no-op when Firebase is not configured.  Saving remotely
+// enables multiple users to share the same dashboard data across devices.
+// Disabled remote persistence.  In local‑only mode this function does nothing.
+async function saveRemoteState(){
+  try{
+    if(!window.supa){ console.warn('[supa] client missing'); return; }
+    const st = window.state || {};
+    const { users, ...rest } = st;
+    const safe = { ...rest, _hasUsers: !!users };
+    const { error } = await window.supa
+      .from('app_state')
+      .upsert({ id: window.WORKSPACE_ID, state: safe, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (error) console.warn('[supa] save error', error);
+  }catch(e){ console.warn('[supa] save exception', e); }
+}
+
+// Load dashboard state from Firestore for the given user ID.  Returns null
+// if no remote data exists or if Firebase is not configured.  When data is
+// found the caller should merge or replace the in-memory state before
+// calling render() and save().
+// Disabled remote loading.  In local‑only mode always return null.
+async function loadRemoteState(){
+  try{
+    if(!window.supa){ console.warn('[supa] client missing'); return null; }
+    const { data, error } = await window.supa
+      .from('app_state')
+      .select('state')
+      .eq('id', window.WORKSPACE_ID)
+      .single();
+    if (error && error.code !== 'PGRST116'){ console.warn('[supa] load error', error); return null; }
+    return data?.state || null;
+  }catch(e){ console.warn('[supa] load exception', e); return null; }
+}
+var PKG_META = {};  /* predeclare to avoid TDZ */
+
+function load(){
+  try{
+    // Attempt to load from the current storage key.  If no data is found
+    // under this key, migrate data from the most recent previous version.
+    let raw = localStorage.getItem(STORE_KEY);
+    if(!raw){
+      // List of older storage keys in descending order of preference.  If
+      // data exists under any of these keys, copy it into the current
+      // STORE_KEY so that existing dashboards are preserved when the key is
+      // bumped.  Only the first available dataset is migrated.
+      const prevKeys = [
+        "marlow.dashboard.v22",
+        "marlow.dashboard.v21",
+        "marlow.dashboard.v20",
+        "marlow.dashboard.v19",
+        "marlow.dashboard.v18"
+      ];
+      for(const k of prevKeys){
+        const oldRaw = localStorage.getItem(k);
+        if(oldRaw){
+          // Copy the old data into the new key.  Do not remove the old
+          // entry so that the user can still restore manually via
+          // Backup/Restore if desired.
+          localStorage.setItem(STORE_KEY, oldRaw);
+          raw = oldRaw;
+          break;
+        }
+      }
+    }
+    if(!raw) return deepClone(DEFAULT);
+    const obj = JSON.parse(raw);
+    // Safety shims
+    obj.archives ||= {};
+    obj.leads ||= [];
+    obj.wonLeads ||= [];
+    obj.tasks ||= [];
+    obj.prices ||= deepClone(DEFAULT.prices);
+    obj.commissionPct ??= 0.10;
+    obj.durations = Object.assign({}, DEFAULT.durations, obj.durations||{});
+    // Normalize package identifiers on existing clients. In older
+    // versions of the dashboard, the package property could be
+    // stored as a human‑readable label such as "Trial (1 mo)" or
+    // "Regular (6 mo)", rather than the canonical key (e.g.,
+    // "trial", "mini"). This prevented lookups into PKG_META and
+    // caused revenue miscalculations. Convert any non‑standard
+    // identifiers to their canonical form by matching on
+    // substrings. If no match is found, default to "none".
+    if(obj.clients && typeof obj.clients === 'object'){
+      Object.values(obj.clients).forEach(c => {
+        const p = c && typeof c.package === 'string' ? c.package : '';
+        if(!PKG_META[p]){
+          const lower = p.toLowerCase();
+          if(lower.includes('trial')) c.package = 'trial';
+          else if(lower.includes('regular') || lower.includes('mini')) c.package = 'mini';
+          else if(lower.includes('medium')) c.package = 'medium';
+          else if(lower.includes('large')) c.package = 'large';
+          else if(lower.includes('website')) c.package = 'website';
+          else c.package = 'none';
+        }
+      });
+    }
+    return obj;
+  }catch(e){
+    console.error("load failed", e);
+    return deepClone(DEFAULT);
+  }
+}
+let state = load();
+// Always clear the currentUserId on initial load so that a login prompt
+// is shown on every page refresh. Without resetting this property,
+// the dashboard would remember the last logged-in user and skip the
+// sign‑in screen, confusing users. Clearing it here forces the
+// dashboard to call renderLogin() and display the login form.
+state.currentUserId = null;
+// Always reset the revenue view to the current month/year on load.
+// Persisting the last viewed month in localStorage confused some users
+// because reopening the dashboard weeks or months later would show an
+// outdated month (e.g. August 2026). To avoid this, override the
+// revYear/revMonth to the current date every time the page loads.
+// Navigation will still update these values during the session, but
+// they no longer persist across reloads. See user feedback about
+// defaulting to the wrong month.
+state.revYear = new Date().getFullYear();
+state.revMonth = new Date().getMonth();
+
+// Apply the current theme class to the document body. This helper
+// toggles the 'light' class depending on the state's theme. When
+// state.theme === 'light', the body receives the 'light' class which
+// overrides dark theme variables. Otherwise the dark palette is used.
+function applyTheme(){
+  document.body.classList.toggle('light', state.theme === 'light');
+}
+
+function save(bounce=true){
+  // Persist state locally
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  // Persist state remotely (if Firebase is configured).  This call is
+  // asynchronous and errors are handled inside saveRemoteState().
+  saveRemoteState();
+  const s = $("#saveStatus");
+  s.textContent = "Saved";
+  setTimeout(()=>s.textContent="", 900);
+}
+
+/*** navigation ***/
+// Include a new Content tab for managing posts across clients. The Content
+// calendar allows viewing and scheduling social media posts separate from
+// project tasks. The order of tabs has been adjusted so Content appears
+// between Clients and Employees to mirror the workflow: after adding
+// clients you can immediately begin managing their content.
+// Tabs are determined dynamically based on the logged‑in user's role. Clients
+// see only Overview and Content. Employees may lack access to Sales,
+// Employees or Settings depending on their role. Owners see all tabs.
+function renderTabs(){
+  const el = $("#tabs");
+  if(!el) return;
+  let tabs = ["Overview","Clients","Content","Employees","Sales","Settings"];
+  if(isClient()){
+    // Clients can view Overview, Content and change their settings (password)
+    tabs = ["Overview","Content","Settings"];
+  } else {
+    const role = state.users[state.currentUserId]?.role || '';
+    // Hide Settings for non‑owners
+    if(role !== 'owner') tabs = tabs.filter(t => t !== 'Settings');
+    // Hide Sales for non‑sales roles and non‑owners
+    if(role !== 'owner' && role !== 'sales') tabs = tabs.filter(t => t !== 'Sales');
+    // Hide Employees for non‑owners
+    if(role !== 'owner') tabs = tabs.filter(t => t !== 'Employees');
+  }
+  // Ensure the current tab is valid; if not, default to the first available tab
+  if(!tabs.includes(currentTab)) currentTab = tabs[0];
+  el.innerHTML = tabs.map(t=>`<div class="tab ${t===currentTab?'active':''}" data-tab="${t}">${t}</div>`).join("");
+  el.onclick = (e)=>{
+    const tab = e.target.closest(".tab")?.dataset.tab;
+    if(tab){ currentTab = tab; render(); }
+  };
+  // Add a logout button to the end of the tab bar when a user is logged in.
+  const logoutBtnId = 'logoutBtn';
+  let existing = document.getElementById(logoutBtnId);
+  if(!existing){
+    const btn = document.createElement('button');
+    btn.className = 'btn small secondary';
+    btn.id = logoutBtnId;
+    btn.textContent = 'Logout';
+    btn.style.marginLeft = '12px';
+    btn.onclick = () => {
+      state.currentUserId = null;
+      save(); render();
+    };
+    el.appendChild(btn);
+  }
+}
+
+let currentTab = "Overview";
+function setViewAsOptions(){
+  const sel = $("#viewAs");
+  // When a client is logged in, hide both the "Viewing as" label and the
+  // selector so they cannot switch between team members. The label and
+  // select live as the first two children of their parent hstack.
+  const container = sel?.parentNode;
+  // Hide the "Viewing as" label and the select when a client is logged in.
+  // Use query selectors to target the elements rather than relying on
+  // child indices, which can vary if additional buttons are added.
+  if(isClient()){
+    if(container){
+      const lbl = container.querySelector('label.small');
+      if(lbl) lbl.style.display = 'none';
+    }
+    if(sel) sel.style.display = 'none';
+    return;
+  } else {
+    // Show the label and select for non-client users
+    if(container){
+      const lbl = container.querySelector('label.small');
+      if(lbl) lbl.style.display = '';
+    }
+    if(sel) sel.style.display = '';
+  }
+  // Populate the view-as select for non-client users. Include a Team (All)
+  // option and list each user. Mark the current selection accordingly.
+  let optionsHtml = `<option value="all" ${state.currentUserId==='all'?'selected':''}>Team (All)</option>`;
+  optionsHtml += Object.values(state.users).map(u=>`<option value="${u.id}" ${u.id===state.currentUserId?'selected':''}>${u.name}</option>`).join("");
+  if(sel){ sel.innerHTML = optionsHtml; }
+  if(sel){
+    sel.onchange = (e)=>{
+      const val = e.target.value;
+      state.currentUserId = val;
+      save(); render();
+    };
+  }
+}
+
+/*** permissions ***/
+function isOwner(){ return state.users[state.currentUserId]?.role === "owner"; }
+// A user can view revenue if they are an owner or have the sales role. When
+// viewing as "Team (All)" (i.e. state.currentUserId === 'all'), treat
+// the current user as having full visibility. This prevents the revenue
+// chart from being hidden when the owner selects the team view.
+function canSeeRevenue(){
+  if(state.currentUserId === 'all') return true;
+  return isOwner() || state.users[state.currentUserId]?.role === "sales";
+}
+function visibleAssigneeId(){
+  // If viewing as "Team (All)" or the current user is the owner, show all tasks
+  // When logged in as a client, do not filter by assignee so the client sees
+  // all tasks for their own account. Returning null here causes tasksOnDate
+  // and other helpers to ignore the assignee filter.
+  if(isClient()) return null;
+  // When viewing as "Team (All)" show all tasks. Otherwise restrict to the selected user.
+  if(state.currentUserId === 'all') return null;
+  return state.currentUserId;
+} // null => all
+
+// Determine if the logged‑in user is a client. Clients have IDs prefixed
+// with "client-". A client user should only see their own tasks and
+// content and will have limited access to tabs and controls. Use
+// currentClientId() to extract the underlying client id when needed.
+function isClient(){
+  return state.currentUserId && typeof state.currentUserId === 'string' && state.currentUserId.startsWith('client-');
+}
+
+function currentClientId(){
+  return isClient() ? state.currentUserId.slice('client-'.length) : null;
+}
+
+// Render a simple login screen allowing the user to select from
+// available accounts. Users include employees/owners from state.users
+// and clients (prefixed with client-). No passwords are enforced to
+// keep the demo lightweight. Once a user is selected, the dashboard
+// re-renders under their identity. A logout button will appear in
+// the top bar when a user is logged in.
+
+function renderLogin(){
+  const screen = document.getElementById('screen');
+  if(!screen) return;
+  const cont = document.createElement('div');
+  cont.style.maxWidth = '480px';
+  cont.style.margin = '80px auto';
+  cont.className = 'card';
+  const userOpts = Object.keys((state.users||{})).map(id=>{const u=state.users[id]||{};const name=u.name||id;const role=u.role?` (${u.role})`:'';return `<option value="${id}">${name}${role}</option>`;}).join('');
+  cont.innerHTML = `
+    <h3 style="text-align:center;margin-bottom:16px">Sign in</h3>
+    <div class="chips" id="loginToggle" style="justify-content:center;margin-bottom:12px">
+      <div class="chip active" data-mode="client">Client</div>
+      <div class="chip" data-mode="employee">Employee</div>
+    </div>
+    <div id="clientForm" style="margin-top:16px">
+      <label style="display:block;margin-bottom:6px">Client name</label>
+      <input id="loginClientUsername" type="text" placeholder="Business name" style="width:100%;margin-bottom:8px"/>
+      <label style="display:block;margin-bottom:6px">Password</label>
+      <input id="loginClientPwd" type="password" placeholder="Password" style="width:100%"/>
+      <button class="btn" id="loginClientBtn" style="width:100%;margin-top:8px">Login</button>
+    </div>
+    <div id="employeeForm" style="margin-top:16px;display:none">
+      <label style="display:block;margin-bottom:6px">Employee account</label>
+      <select id="loginUser" style="width:100%;margin-bottom:8px">${userOpts}</select>
+      <label style="display:block;margin-bottom:6px">Password</label>
+      <input id="loginUserPwd" type="password" placeholder="Password" style="width:100%" />
+      <button class="btn" id="loginEmp" style="width:100%;margin-top:8px">Login</button>
+    </div>
+  `;
+  screen.innerHTML = '';
+  screen.appendChild(cont);
+  // Toggle between login modes
+  document.getElementById('loginToggle').onclick = (e) => {
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    const mode = chip.dataset.mode;
+    document.querySelectorAll('#loginToggle .chip').forEach(ch => ch.classList.remove('active'));
+    chip.classList.add('active');
+    document.getElementById('clientForm').style.display = mode === 'client' ? '' : 'none';
+    document.getElementById('employeeForm').style.display = mode === 'employee' ? '' : 'none';
+  };
+  // Employee login handler
+  const empBtn = document.getElementById('loginEmp');
+  if(empBtn){
+    empBtn.onclick = async () => {
+      const uid = document.getElementById('loginUser').value;
+      const pwd = (document.getElementById('loginUserPwd')?.value || '').trim();
+      if (!uid) { alert('Select an employee account.'); return; }
+      const user = state.users[uid];
+      const storedPwd = user?.password || '';
+      if (!pwd) { alert('Please enter a password.'); return; }
+      if (pwd === storedPwd) {
+        // Set the logged in user id
+        state.currentUserId = uid;
+        const remote = await loadRemoteState();
+        if (remote && typeof remote === 'object') {
+          const localUsers = state.users;
+          state = window.state = { ...state, ...remote, users: localUsers };
+        }
+        save();
+        render();
+      } else {
+        alert('Incorrect password.');
+      }
+    };
+  }
+  // Client login handler
+  const clientBtn = document.getElementById('loginClientBtn');
+  if(clientBtn){
+    clientBtn.onclick = async () => {
+      const uInput = document.getElementById('loginClientUsername').value.trim().toLowerCase();
+      const pwdInput = document.getElementById('loginClientPwd').value.trim();
+      if (!uInput || !pwdInput) {
+        alert('Please enter both username and password.');
+        return;
+      }
+      const cid = Object.keys(state.clients).find(k => {
+        const cU = (state.clients[k].username || '').toLowerCase().trim();
+        return cU === uInput;
+      });
+      if (cid) {
+        const client = state.clients[cid];
+        if (client.password && client.password === pwdInput) {
+          // Compose the user id for clients (prefixed with "client-")
+          state.currentUserId = 'client-' + cid;
+          const remote = await loadRemoteState();
+          if (remote && typeof remote === 'object') {
+            const localUsers = state.users;
+            state = window.state = { ...state, ...remote, users: localUsers };
+          }
+          save();
+          render();
+        } else {
+          alert('Incorrect password.');
+        }
+      } else {
+        alert('Client not found.');
+      }
+    };
+  }
+}
+/*** view state helpers ***/
+// The Content tab and client calendars need to remember which client and
+// which month/year are currently being viewed. Because the dashboard
+// re-renders frequently, store these selections in module-level variables
+// rather than in local closures. When the Content tab first loads it will
+// default to the first client. Users can change the selected client
+// via a dropdown. contentViewYear and contentViewMonth track the
+// currently displayed month in the content calendar.
+let contentClientId = null;
+let contentViewYear = new Date().getFullYear();
+let contentViewMonth = new Date().getMonth();
+
+// Each client can show either a "work" calendar (for tasks) or a
+// "content" calendar (for social media posts). Persist the current
+// view for each client in this object keyed by client id. Defaults to
+// "work" when undefined.
+const clientViewModes = {};
+
+// The content tab allows switching between different deliverable types
+// (videos, photos, carousels, website) and between sets (for multi-
+// month packages). Track the currently selected type and set at the
+// module level so re-renders persist the choice. Defaults are
+// populated when renderContent() is first invoked.
+let contentType = 'video';
+let contentSetIndex = 0;
+
+/*** calendar ***/
+function monthMatrix(year, month){ // month 0..11
+  const first = new Date(year, month, 1);
+  const startDay = (first.getDay()+6)%7; // start Mon? we will keep Sun-based=0 simpler. We'll keep Sunday index 0
+  const start = new Date(year, month, 1 - first.getDay()); // Sunday as first cell
+  const weeks = 6;
+  const days = [];
+  for(let i=0;i<42;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    days.push(d);
+  }
+  return days;
+}
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/*** task helpers ***/
+function taskColor(type){
+  const map = {S:"#69c", F:"#c96", E:"#6c9", P:"#9c6", N:"#b9c", L:"#d8b", W:"#7dd"};
+  return map[type?.toUpperCase()] || "#6a7cff";
+}
+
+// Return the chosen colour for a client. Falls back to a default if
+// none is defined. Client colours are selected when adding a client
+// and stored on the client object.
+function clientColor(clientId){
+  const c = state.clients[clientId];
+  return c?.color || '#915eff';
+}
+function requiredSkill(type){
+  const map = {S:"script", F:"film", E:"edit", P:"photo", W:"website", N:"none", L:"ops"};
+  if(type==="W"||type==="N"||type==="L") return null;
+  return map[type?.toUpperCase()] || null;
+}
+function tasksOnDate(dateStr, clientId=null, assigneeFilter=null){
+  return state.tasks.filter(t=>t.date===dateStr && (!clientId||t.clientId===clientId) && (!assigneeFilter || t.assigneeId===assigneeFilter));
+}
+function weeklyTasks(startStr, endStr, assigneeFilter=null){
+  const start = parseDate(startStr).getTime();
+  const end = parseDate(endStr).getTime();
+  return state.tasks.filter(t=>{
+    const tt = parseDate(t.date).getTime();
+    return tt>=start && tt<=end && (!assigneeFilter||t.assigneeId===assigneeFilter);
+  }).sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+/*** allocation & capacity ***/
+function empWorksOn(dateStr, emp){
+  const d = parseDate(dateStr).getDay(); // 0 Sun..6 Sat
+  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return !!emp.days[days[d]];
+}
+function empCapacityUsed(dateStr, empId){
+  return state.tasks.filter(t=>t.date===dateStr && t.assigneeId===empId)
+    .reduce((s,t)=>s + (Number(t.duration)||0),0);
+}
+function firstAvailableEmp(dateStr, skill){
+  // Choose an employee who works on the given date and has the required
+  // skill. Prefer non‑owner staff over the owner when possible so the
+  // owner is only scheduled if no other employee with the skill is
+  // available. Otherwise fall back to the owner. Always exclude sales
+  // staff from production tasks.
+  const emps = Object.values(state.users).filter(u => u.role !== "sales");
+  // First try to find non‑owner employees who work that day and have the skill
+  let candidates = emps.filter(e => e.role !== "owner" && empWorksOn(dateStr, e) && (!skill || e.skills.includes(skill)));
+  // If none found, allow owners in the candidate list
+  if(candidates.length === 0){
+    candidates = emps.filter(e => empWorksOn(dateStr, e) && (!skill || e.skills.includes(skill)));
+  }
+  if(!candidates.length) return null;
+  // Sort by the least hours used on the given date
+  candidates.sort((a,b) => empCapacityUsed(dateStr, a.id) - empCapacityUsed(dateStr, b.id));
+  return candidates[0];
+}
+function placeTask(dateStr, task){
+  // ensure capacity; if over, push to next day
+  let d = dateStr;
+  let guard=0;
+  while(guard<180){
+    guard++;
+    const reqSkill = requiredSkill(task.type);
+    let emp = task.assigneeId ? state.users[task.assigneeId] : firstAvailableEmp(d, reqSkill);
+    if(!emp){ d = addDays(d,1); continue; }
+    const used = empCapacityUsed(d, emp.id);
+    if(used + Number(task.duration||0) <= (emp.hoursPerDay||8)){
+      task.assigneeId = emp.id;
+      task.date = d;
+      return;
+    } else {
+      d = addDays(d,1);
+    }
+  }
+}
+
+// Reassign all tasks for a given employee if they no longer meet the
+// skill requirements. This helper loops through existing tasks and,
+// for each task assigned to the provided employee, verifies whether
+// they still have the required skill to perform it. If not, the task
+// is cleared of its assignee and passed through placeTask() again to
+// find a new suitable worker. After reassigning, the state is
+// persisted. This is called after editing an employee's skills.
+function reassignTasks(empId){
+  state.tasks.forEach(t => {
+    // Only consider tasks currently assigned to this employee
+    if(t.assigneeId === empId){
+      const skill = requiredSkill(t.type);
+      const emp = state.users[empId];
+      // Determine the best candidate for this task given its date and skill.
+      // If another employee is available who better matches the skill or
+      // simply isn't the owner, move the task to that candidate. We also
+      // reassign if the employee no longer has the required skill.
+      if(skill){
+        const best = firstAvailableEmp(t.date, skill);
+        if(best && best.id !== empId){
+          t.assigneeId = best.id;
+          return;
+        }
+        // If the employee lost the skill, clear and re-place
+        if(!emp.skills.includes(skill)){
+          t.assigneeId = null;
+          placeTask(t.date, t);
+          return;
+        }
+      }
+    }
+  });
+  save();
+}
+
+/*** scheduling ***/
+PKG_META = {
+  none:{months:0, influencers:0, scriptHrs:0, filmHrs:0, photoHrs:0, videoCount:0, photoCount:0, carouselCount:0, emailCount:0},
+  // Trial package: 1 month, 4 videos, 4 photos, 4 carousels. Includes 2h scripting, 4h filming, 1h photography.
+  trial:{months:1, influencers:1, scriptHrs:2, filmHrs:4, photoHrs:1, videoCount:4, photoCount:4, carouselCount:4, emailCount:1},
+  // Mini/Regular package: 6 months, 8 videos, 6 photos, 5 carousels per month.
+  mini:{months:6, influencers:1, scriptHrs:4, filmHrs:8, photoHrs:2, videoCount:8, photoCount:6, carouselCount:5, emailCount:1},
+  // Medium package: grows by the same amount as mini; 12 videos, 8 photos, 6 carousels per month.
+  medium:{months:6, influencers:2, scriptHrs:6, filmHrs:12, photoHrs:2, videoCount:12, photoCount:8, carouselCount:6, emailCount:1},
+  // Large package: 16 videos, 10 photos, 7 carousels per month; 8h scripting, 16h filming.
+  large:{months:6, influencers:3, scriptHrs:8, filmHrs:16, photoHrs:2, videoCount:16, photoCount:10, carouselCount:7, emailCount:1},
+  // Website-only packages run for one month and include no video/photo content.
+  website:{months:1, influencers:0, scriptHrs:0, filmHrs:0, photoHrs:0, videoCount:0, photoCount:0, carouselCount:0, emailCount:0}
+};
+const TASK_TYPES = {S:"script", F:"film", E:"edit", P:"photo", N:"ops", W:"website", L:"ops"};
+
+function makeTask(clientId, name, date, start="09:00", duration=1, type="N", extra={}){
+  return Object.assign({id:uid(), clientId, name, date, start, duration, type, assigneeId:null, done:false}, extra);
+}
+
+/*** content scheduling ***/
+// Create a content posting schedule for a new client. Posts are placed
+// on the content calendar (client.content) based on the package size
+// and a simple weekday mapping: videos go out on Monday and Friday,
+// photos on Tuesday and Saturday, and carousels on Wednesday and
+// Sunday. The number of posts per type is proportional to the
+// package's film hours (e.g. 4, 8, 12, 16). Scheduling begins 28
+// days after onboarding and repeats monthly for the length of the
+// package. Posts are evenly distributed across the month.
+function scheduleContentPosts(client){
+  const meta = PKG_META[client.package || 'none'] || {months:0, filmHrs:0, photoHrs:0};
+  const monthsCount = meta.months || 0;
+  if(monthsCount <= 0) return;
+  // Determine number of posts per type based on package definitions. Video,
+  // photo and carousel counts are defined explicitly in PKG_META. Fall back to
+  // filmHrs when not provided.
+  const videoCount = meta.videoCount ?? Math.max(0, meta.filmHrs);
+  const photoCount = meta.photoCount ?? Math.max(0, meta.filmHrs);
+  const carouselCount = meta.carouselCount ?? Math.max(0, meta.filmHrs);
+  const emailCount = meta.emailCount || 0;
+  const startPosting = parseDate(addDays(client.onboard, 28));
+  // Choose posting days based on the number of months. Trial packages (1
+  // month) should spread content across the entire month by posting
+  // each type once per week. Larger packages can post twice per week.
+  const single = (meta.months === 1);
+  const daysMap = {
+    video: single ? [1] : [1,5],     // Monday (and Friday for multi-month)
+    photo: single ? [2] : [2,6],     // Tuesday (and Saturday)
+    carousel: single ? [3] : [3,0],  // Wednesday (and Sunday)
+    email: [4]                       // Thursday for email campaigns regardless of package length
+  };
+  for(let m=0; m<monthsCount; m++){
+    const base = new Date(startPosting);
+    base.setDate(base.getDate() + 28*m);
+    // helper to schedule posts for given type
+    function scheduleFor(count, typeKey){
+      const dows = daysMap[typeKey];
+      let date = new Date(base);
+      let scheduled = 0;
+      while(scheduled < count){
+        if(dows.includes(date.getDay())){
+          const p = { id: uid(), title: typeKey.charAt(0).toUpperCase() + typeKey.slice(1), date: fmtDate(date), type: typeKey };
+          if(!client.content) client.content = [];
+          client.content.push(p);
+          scheduled++;
+        }
+        // move to next day
+        date.setDate(date.getDate()+1);
+      }
+    }
+    scheduleFor(videoCount, 'video');
+    scheduleFor(photoCount, 'photo');
+    scheduleFor(carouselCount, 'carousel');
+    if(emailCount > 0){
+      scheduleFor(emailCount, 'email');
+    }
+  }
+  save();
+}
+
+// Determine the highest numeric phase index for a client's tasks. The
+// scheduleClientMonths function assigns a numeric phase to each task
+// in its meta object. We use this helper to find the last
+// scheduled phase when auto‑scheduling additional months.
+function getMaxPhaseForClient(client){
+  if(!client) return -1;
+  let max = -1;
+  if(Array.isArray(state.tasks)){
+    state.tasks.forEach(t => {
+      if(t.clientId === client.id && t.meta && typeof t.meta.phase === 'number'){
+        if(t.meta.phase > max) max = t.meta.phase;
+      }
+    });
+  }
+  return max;
+}
+
+// Schedule additional content posts starting at a particular month index.
+// This function mirrors scheduleContentPosts but allows specifying the
+// starting month so that posts can be appended to an existing schedule
+// instead of overwriting it. It also ensures posts are not duplicated
+// when run multiple times by checking for existing posts on the same
+// date and type.
+function scheduleAdditionalContentPosts(client, startMonthIndex=0, months=1){
+  if(!client) return;
+  const meta = PKG_META[client.package||'none'] || {};
+  const videoCount = meta.videoCount ?? Math.max(0, meta.filmHrs);
+  const photoCount = meta.photoCount ?? Math.max(0, meta.filmHrs);
+  const carouselCount = meta.carouselCount ?? Math.max(0, meta.filmHrs);
+  const emailCount = meta.emailCount || 0;
+  const single = (meta.months === 1);
+  const daysMap = {
+    video: single ? [1] : [1,5],
+    photo: single ? [2] : [2,6],
+    carousel: single ? [3] : [3,0],
+    email: [4]
+  };
+  // Base posting date is four weeks after onboarding
+  const basePosting = parseDate(addDays(client.onboard, 28));
+  for(let m=0; m<months; m++){
+    const base = new Date(basePosting);
+    // Advance base by the desired number of 28‑day cycles
+    base.setDate(base.getDate() + 28 * (startMonthIndex + m));
+    function scheduleFor(count, typeKey){
+      const dows = daysMap[typeKey];
+      let date = new Date(base);
+      let scheduled = 0;
+      while(scheduled < count){
+        if(dows.includes(date.getDay())){
+          const dateStr = fmtDate(date);
+          // Only create a new post if one doesn't already exist for
+          // this date and type
+          if(!client.content) client.content = [];
+          const exists = client.content.some(p => p.date === dateStr && p.type === typeKey);
+          if(!exists){
+            const p = { id: uid(), title: typeKey.charAt(0).toUpperCase()+typeKey.slice(1), date: dateStr, type: typeKey };
+            client.content.push(p);
+            scheduled++;
+          }
+        }
+        date.setDate(date.getDate() + 1);
+      }
+    }
+    scheduleFor(videoCount, 'video');
+    scheduleFor(photoCount, 'photo');
+    scheduleFor(carouselCount, 'carousel');
+    if(emailCount > 0){
+      scheduleFor(emailCount, 'email');
+    }
+  }
+  save();
+}
+
+// Ensure a client's draft deliverables exist. Creates arrays of draft
+// objects for videos, photos and carousels based on the package's
+// filming hours. Each draft holds input fields for ideas, scripts,
+// examples, captions and final deliverables. Called when opening
+// deliverable view for the first time.
+function ensureDrafts(client){
+  // If drafts already exist, do nothing. Drafts are created once per client.
+  // If drafts have never been created, build all arrays from scratch based on the
+  // client's package. Otherwise, ensure new deliverable types (like email or
+  // website) are added when a package upgrade introduces them. We do not
+  // recreate existing arrays so user data is preserved.
+  const meta = PKG_META[client.package||'none'] || {videoCount:0, photoCount:0, carouselCount:0, emailCount:0, months:0};
+  const months = Math.max(1, meta.months || 1);
+  const makeDraft = () => ({id: uid(), idea:'', script:'', example:'', caption:'', finalVideo:'', finalCaption:'', used:false});
+  const makeEmailDraft = () => ({id: uid(), offer:'', emailText:'', link:'', image:'', finalImage:'', finalOffer:'', finalEmailText:'', used:false});
+  if(!client.drafts){
+    // Create base drafts for video, photo and carousel
+    const vTotal = (meta.videoCount || 0) * months;
+    const pTotal = (meta.photoCount || 0) * months;
+    const cTotal = (meta.carouselCount || 0) * months;
+    const eTotal = (meta.emailCount || 0) * months;
+    client.drafts = {
+      video: Array.from({length:vTotal}, () => makeDraft()),
+      photo: Array.from({length:pTotal}, () => makeDraft()),
+      carousel: Array.from({length:cTotal}, () => makeDraft())
+    };
+    if(eTotal > 0) client.drafts.email = Array.from({length:eTotal}, () => makeEmailDraft());
+    // Schedule content posts for email if not already scheduled. Avoid
+    // duplicating posts by checking for existing unspecific email posts.
+    try{
+      if(typeof scheduleContentPosts === 'function' && (!client.content || !client.content.some(p => p.type === 'email'))){
+        scheduleContentPosts(client);
+      }
+    }catch(e){}
+    if(client.addons?.website || client.package === 'website'){
+      client.drafts.website = [{ id: uid(), url:'', description:'', finalLink:'', used:false }];
+    }
+    return;
+  }
+  // At this point drafts exist. Ensure email drafts and website drafts are present
+  // if the package supports them but the draft arrays are missing. Do not
+  // overwrite existing drafts or shrink arrays; only add missing items.
+  const currentEmailDrafts = client.drafts.email || [];
+  const expectedEmailCount = (meta.emailCount || 0) * months;
+  if(expectedEmailCount > 0 && currentEmailDrafts.length === 0){
+    client.drafts.email = Array.from({length: expectedEmailCount}, () => makeEmailDraft());
+    // Schedule email posts for the client if none exist yet
+    try{
+      if(typeof scheduleContentPosts === 'function' && (!client.content || !client.content.some(p => p.type === 'email'))){
+        scheduleContentPosts(client);
+      }
+    }catch(e){}
+  }
+  // Ensure website draft exists if the client has the website addon or package
+  if((client.addons?.website || client.package === 'website') && !client.drafts.website){
+    client.drafts.website = [{ id: uid(), url:'', description:'', finalLink:'', used:false }];
+  }
+}
+
+// Assign a draft deliverable to the client's scheduled posts. Finds the
+// first unscheduled content post matching the type and attaches the
+// draft details. Marks the draft as used. If no slots are available,
+// shows an alert.
+function assignDraftToCalendar(client, type, draft){
+  if(!client) return;
+  // Website deliverables are not scheduled on the social calendar. Simply
+  // mark them as used when scheduled to indicate completion.
+  if(type === 'website'){
+    draft.used = true;
+    // remove any lingering scheduled flag when a deliverable is posted
+    draft.scheduledToFilm = false;
+    save();
+    return;
+  }
+  if(!client.content) client.content = [];
+  let post = client.content.find(p=>p.type===type && !p.draftId);
+  // When no posting slot is available, attempt to schedule additional posts
+  // for this type. This prevents the "No available posting slot" error
+  // when drafts are created after the initial scheduling or when all slots
+  // have been used. Recompute the client's content array then look again.
+  if(!post){
+    // When no posting slot exists for this type, extend the schedule by
+    // adding a new month of posts. Use the highest existing phase as
+    // the starting point for new posts. scheduleAdditionalContentPosts
+    // schedules posts per package definitions and avoids duplicating
+    // existing slots. Fallback to scheduleContentPosts when the
+    // additional scheduler is unavailable.
+    try{
+      const nextStart = (typeof getMaxPhaseForClient === 'function' ? getMaxPhaseForClient(client) + 1 : 0);
+      if(typeof scheduleAdditionalContentPosts === 'function'){
+        scheduleAdditionalContentPosts(client, nextStart, 1);
+      } else if(typeof scheduleContentPosts === 'function'){
+        scheduleContentPosts(client);
+      }
+    }catch(e){}
+    post = client.content.find(p=>p.type===type && !p.draftId);
+    if(!post){
+      alert('No available posting slot for this type');
+      return;
+    }
+  }
+  post.draftId = draft.id;
+  // Determine the title for the scheduled post based on the deliverable type. For
+  // social posts (video/photo/carousel) use the final caption or caption as
+  // before. For email campaigns, use the final offer or offer as the post
+  // title since captions are not applicable. Fallback to the type name
+  // capitalised when no suitable field exists.
+  if(type === 'email'){
+    post.title = draft.finalOffer || draft.offer || 'Email';
+    // Store the email body on the post so clients can preview it later. Use
+    // finalEmailText when present, otherwise fall back to the draft body.
+    post.body = draft.finalEmailText || draft.emailText || '';
+    // Also store the CTA link or general link for reference
+    post.link = draft.link || '';
+    // Include the image preview if available
+    if(draft.finalImage) post.image = draft.finalImage;
+  } else {
+    post.title = draft.finalCaption || draft.caption || type.charAt(0).toUpperCase()+type.slice(1);
+  }
+  draft.used = true;
+  // unschedule from any production tasks once posted
+  draft.scheduledToFilm = false;
+  save();
+}
+
+// Assign a draft deliverable to the next available filming task. Each
+// filming task has a capacity equal to its duration (1h per draft).
+// The draft is appended to the task's `cards` array. If no slots are
+// available, an alert is shown. This does not schedule content posts;
+// it merely prepares the draft for filming.
+function assignDraftToFilming(client, type, draft){
+  if(!client || !draft) return;
+  // Prevent scheduling the same draft multiple times. If it has
+  // already been marked as scheduled to film, show a message and skip.
+  if(draft.scheduledToFilm){
+    alert('This draft is already scheduled for filming.');
+    return;
+  }
+  // Filming applies to video/photo/carousel types. Route drafts based on
+  // keywords in the task names rather than exact equality so custom
+  // names like "Filming Day 2" or "Photo session" still qualify.
+  const tasks = state.tasks.filter(t=>t.clientId===client.id && (
+    (type === 'video' && /filming/i.test(t.name)) ||
+    ((type === 'photo' || type === 'carousel') && /photo/i.test(t.name))
+  ));
+  // Sort by date ascending
+  tasks.sort((a,b)=> a.date.localeCompare(b.date));
+  for(const t of tasks){
+    // Determine maximum number of drafts that can fit in this task.
+    // For photo capture tasks always allow up to 8 drafts (4 photos and 4
+    // carousels per day) regardless of the task duration. Filming tasks
+    // allow up to 4 drafts. For non‑photo tasks you can still honour the
+    // duration if it is set by the user. Photo tasks ignore duration to
+    // ensure all eight deliverables fit.
+    let max;
+    if (/photo/i.test(t.name)) {
+      // Always provide 8 slots for photo/capture days
+      max = 8;
+    } else {
+      max = 4;
+      const durMax = Math.floor(t.duration || 0);
+      if (durMax > 0) max = Math.min(max, durMax);
+    }
+    if(!t.meta) t.meta = {};
+    if(!t.meta.cards) t.meta.cards = [];
+    if(t.meta.cards.length < max){
+      t.meta.cards.push({id: draft.id, type});
+      // Mark as scheduled to a production task. Do not mark used; used
+      // will be set only when posting to the calendar.
+      draft.scheduledToFilm = true;
+        // Additionally attach this draft to scripting and editing tasks for
+        // the same client. This makes drafts available in later phases
+        // without requiring manual assignment. Limit duplicates by
+        // checking for existing entries.
+        const editTasks = state.tasks.filter(x => x.clientId===client.id && /edit/i.test(x.name));
+        const scriptTasks = state.tasks.filter(x => x.clientId===client.id && /script/i.test(x.name));
+        [...editTasks, ...scriptTasks].forEach(et => {
+          if(!et.meta) et.meta = {};
+          if(!et.meta.cards) et.meta.cards = [];
+          const exists = et.meta.cards.some(c => c.id === draft.id);
+          if(!exists){
+            et.meta.cards.push({id: draft.id, type});
+          }
+        });
+      save();
+      return;
+    }
+  }
+  alert('No available filming slots for this client.');
+}
+
+// Remove a revenue deal without deleting the entire client or lead. When
+// called with a deal object (as constructed in the revenue chart), it
+// either clears the onboarding date on the client or removes the
+// corresponding won lead. This effectively subtracts the deal from
+// revenue calculations while preserving other data. After removal,
+// the dashboard is re-rendered.
+function deleteDeal(deal){
+  if(!deal) return;
+  // Remove client onboard revenue and any associated wonLead entry.
+  // When a clientId is provided, clear the onboard date and also remove
+  // any wonLead that references this client. Without removing the wonLead,
+  // the personal revenue chart would continue to include the deal because
+  // the win date is still stored in wonLeads. When a leadId is provided,
+  // simply remove that wonLead entry.
+  if(deal.clientId){
+    const c = state.clients[deal.clientId];
+    if(c){
+      // Preserve original values for potential undo operations
+      c._deletedOnboard = c.onboard;
+      c._deletedPrice   = c.price;
+      // Clear the onboard date so the deal no longer counts toward revenue
+      c.onboard = '';
+      // Also zero out the price. drawPersonRevenue multiplies price
+      // by commission percentage even if the win date were left over,
+      // so setting price to 0 prevents ghost commissions from appearing.
+      c.price = 0;
+    }
+    // Remove won leads that reference this client so winDateMap doesn't
+    // include it when calculating commissions.
+    if(Array.isArray(state.wonLeads)){
+      state.wonLeads = state.wonLeads.filter(w => w.clientId !== deal.clientId);
+    }
+  } else if(deal.leadId){
+    // Deal originated from a won lead that has not yet converted to a client.
+    if(Array.isArray(state.wonLeads)){
+      state.wonLeads = state.wonLeads.filter(w => w.id !== deal.leadId);
+    }
+  } else {
+    // Fallback: no explicit id on the deal. Attempt to match by name.
+    // Some older records might not store clientId/leadId, so remove them
+    // based on the name if possible. This ensures the delete button
+    // always does something visible even for legacy data.
+    // Remove matching client onboarding if found
+    const cid = Object.keys(state.clients).find(id => state.clients[id]?.name === deal.name);
+    if(cid){
+      const c = state.clients[cid];
+      c._deletedOnboard = c.onboard;
+      c._deletedPrice   = c.price;
+      c.onboard = '';
+      c.price = 0;
+      if(Array.isArray(state.wonLeads)){
+        state.wonLeads = state.wonLeads.filter(w => w.clientId !== cid);
+      }
+    }
+    // Remove matching won leads by name
+    if(Array.isArray(state.wonLeads)){
+      state.wonLeads = state.wonLeads.filter(w => {
+        if(w.name === deal.name){
+          return false;
+        }
+        return true;
+      });
+    }
+  }
+  save();
+  // Re-render to update revenue charts and lists. Draw both the total
+  // and personal revenue charts explicitly to ensure they refresh.
+  if(typeof drawRevenue === 'function') try{ drawRevenue(); }catch(e){}
+  if(typeof drawPersonRevenue === 'function') try{ drawPersonRevenue(); }catch(e){}
+  if(typeof render === 'function') try{ render(); }catch(e){}
+}
+
+// Construct a deliverable card element. The returned element contains
+// front and back sides that can be flipped by clicking the Flip
+// button. The front includes fields for idea, script and example URL,
+// while the back shows a preview of the finished post, upload
+// controls and a final caption. The optional actions object can
+// provide onSchedule(draft) and onDelete(draft) callbacks which are
+// invoked when the user clicks the +Calendar or trash buttons. This
+// helper is reused by the Content tab and by filming/photo capture
+// popups to ensure a consistent appearance.
+function createDeliverableCard(client, type, draft, actions={}){
+  // Build a flexible deliverable card with flip and optional film/send
+  // actions. The front side contains idea, script, example URL and
+  // caption. The back side shows a preview with media upload and final
+  // caption along with a schedule button. Buttons call callbacks in
+  // the actions object when provided.
+  const card = document.createElement('div');
+  card.className = 'card deliverable';
+  card.style.position = 'relative';
+  // Fix the flex sizing of deliverable cards. When there are fewer
+  // cards than will fit in a row, the browser will stretch them to
+  // fill available space. Explicitly set flex to 0 0 300px so each card
+  // retains its intended width without stretching.
+  card.style.flex = '0 0 300px';
+  const inner = document.createElement('div');
+  inner.className = 'inner';
+  const front = document.createElement('div');
+  front.className = 'front';
+  const back = document.createElement('div');
+  back.className = 'back';
+  // Trash button
+  const trash = document.createElement('button');
+  trash.className = 'trash-btn';
+  trash.innerHTML = '&#128465;';
+  trash.onclick = (e)=>{
+    e.stopPropagation();
+    if(actions.onDelete){ actions.onDelete(draft); }
+  };
+  card.appendChild(trash);
+  // Build the front and back faces based on the deliverable type. For
+  // social posts (video/photo/carousel) we collect an idea, script and
+  // example URL on the front, then show a post-style preview on the
+  // back with a media upload and final caption. For email campaigns we
+  // collect the offer, email body and a link on the front, then show
+  // a simplified email preview on the back with an image, headline and
+  // final email text. The buttons remain consistent across types but
+  // may be hidden later depending on the context (e.g. email drafts
+  // aren’t sent to filming).
+  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+  if(type === 'email'){
+    // Email campaign front: offer, email text and link
+    front.innerHTML = `
+      <div class="small"><b>${typeLabel} Campaign</b></div>
+      <label>Offer
+        <textarea class="input" data-field="offer">${draft.offer||''}</textarea>
+      </label>
+      <label>Email Campaign Text
+        <textarea class="input" data-field="emailText">${draft.emailText||''}</textarea>
+      </label>
+      <label>Mailchimp/SpotHopper Link
+        <input class="input" data-field="link" value="${draft.link||''}" />
+      </label>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <div class="hstack" style="gap:6px">
+          <button class="btn small secondary" data-action="flip">Flip</button>
+          <button class="btn small" data-action="film">Send to filming</button>
+        </div>
+        <span class="small">${draft.used ? 'Scheduled' : 'Draft'}</span>
+      </div>
+    `;
+    // Email campaign back: preview and final fields. Use the final
+    // headline/body when present; otherwise fall back to the draft.
+    const avatar = client.avatar || '';
+    const handle = client.handle || client.name.replace(/\s+/g,'').toLowerCase();
+    const imgHtml = draft.finalImage ? `<img src="${draft.finalImage}" style="width:100%;height:auto;border-radius:8px"/>` : '<div class="placeholder">No image</div>';
+    const headline = draft.finalOffer || draft.offer || '';
+    const body = draft.finalEmailText || draft.emailText || '';
+    back.innerHTML = `
+      <div class="post">
+        <div class="post-header">
+          <div class="avatar" style="background-image:url('${avatar}');"></div>
+          <div class="meta">
+            <div class="name">${client.name}</div>
+            <div class="handle">@${handle}</div>
+          </div>
+        </div>
+        ${imgHtml}
+        <div style="font-weight:700;font-size:15px;margin:10px 8px 0">${headline || 'Set #1 • Email Campaign'}</div>
+        <div class="post-caption" style="white-space:pre-wrap">${body}</div>
+      </div>
+      <label style="margin-top:6px">Upload mockup image
+        <input type="file" class="input" data-field="finalImage" accept="image/*" />
+      </label>
+      <label style="margin-top:6px">Final offer/headline
+        <input class="input" data-field="finalOffer" value="${draft.finalOffer||''}" />
+      </label>
+      <label style="margin-top:6px">Final email text
+        <textarea class="input" data-field="finalEmailText">${draft.finalEmailText||''}</textarea>
+      </label>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <button class="btn small secondary" data-action="flip">Back</button>
+        <button class="btn small" data-action="schedule">+ Calendar</button>
+      </div>
+    `;
+  } else {
+    // Social posts front: idea, script and example URL
+    front.innerHTML = `
+      <div class="small"><b>${typeLabel}</b></div>
+      <label>Idea
+        <textarea class="input" data-field="idea">${draft.idea||''}</textarea>
+      </label>
+      <label>Script
+        <textarea class="input" data-field="script">${draft.script||''}</textarea>
+      </label>
+      <label>Example URL
+        <input class="input" data-field="example" value="${draft.example||''}" />
+      </label>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <div class="hstack" style="gap:6px">
+          <button class="btn small secondary" data-action="flip">Flip</button>
+          <button class="btn small" data-action="film">Send to filming</button>
+        </div>
+        <span class="small">${draft.used ? 'Scheduled' : 'Draft'}</span>
+      </div>
+    `;
+    // Social posts back: preview of video/photo/carousel with final caption
+    const avatar = client.avatar || '';
+    const handle = client.handle || client.name.replace(/\s+/g,'').toLowerCase();
+    const mediaHtml = draft.finalVideo ? `<video src="${draft.finalVideo}" controls style="width:100%;height:auto"></video>` : '<div class="placeholder">No media</div>';
+    back.innerHTML = `
+      <div class="post">
+        <div class="post-header">
+          <div class="avatar" style="background-image:url('${avatar}');"></div>
+          <div class="meta">
+            <div class="name">${client.name}</div>
+            <div class="handle">@${handle}</div>
+          </div>
+        </div>
+        <div class="post-media">${mediaHtml}</div>
+        <div class="post-caption"><b>${client.name}</b> ${draft.finalCaption || draft.caption || ''}</div>
+      </div>
+      <label style="margin-top:6px">Upload media
+        <input type="file" class="input" data-field="finalVideo" accept="video/*,image/*" />
+      </label>
+      <label style="margin-top:6px">Final caption
+        <textarea class="input" data-field="finalCaption">${draft.finalCaption||''}</textarea>
+      </label>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <button class="btn small secondary" data-action="flip">Back</button>
+        <button class="btn small" data-action="schedule">+ Calendar</button>
+      </div>
+    `;
+  }
+  inner.appendChild(front);
+  inner.appendChild(back);
+  card.appendChild(inner);
+  // Update draft fields on input
+  card.querySelectorAll('textarea.input, input.input:not([type="file"])').forEach(inp=>{
+    inp.oninput = ()=>{
+      const f = inp.dataset.field;
+      draft[f] = inp.value;
+      save();
+    };
+  });
+  // File upload for media or email images. Assign the result to the
+  // appropriate draft field specified by the data-field attribute. This
+  // allows email campaigns to save their preview image to
+  // `finalImage`, and social posts to save video or image to
+  // `finalVideo`.
+  card.querySelectorAll('input[type="file"][data-field]').forEach(inp=>{
+    inp.onchange = ()=>{
+      const file = inp.files[0];
+      if(file){
+        const reader = new FileReader();
+        reader.onload = (e)=>{
+          const f = inp.dataset.field;
+          draft[f] = e.target.result;
+          save();
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+  });
+  // Flip
+  card.querySelectorAll('button[data-action="flip"]').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      card.classList.toggle('flipped');
+    };
+  });
+  // Film button
+  const filmBtn = card.querySelector('button[data-action="film"]');
+  if(filmBtn){
+    filmBtn.onclick = (e)=>{
+      e.stopPropagation();
+      if(actions.onFilm){ actions.onFilm(draft); }
+    };
+    // Adjust the film button styling to improve contrast. Use the client's
+    // colour as the background when available; otherwise fall back to
+    // the brand colour. Set the text to a dark hue so it is legible on
+    // coloured backgrounds.
+    const fallbackBg = getComputedStyle(document.documentElement).getPropertyValue('--brand') || '#3b82f6';
+    if(client && client.color){
+      filmBtn.style.background = client.color;
+    } else {
+      filmBtn.style.background = fallbackBg;
+    }
+    filmBtn.style.color = '#0f1115';
+  }
+  // Schedule button
+  const schedBtn = card.querySelector('button[data-action="schedule"]');
+  if(schedBtn){
+    schedBtn.onclick = (e)=>{
+      e.stopPropagation();
+      if(actions.onSchedule){ actions.onSchedule(draft); }
+    };
+  }
+
+  // When a client is logged in, hide editing controls and disable inputs.
+  // Clients can view their deliverables but cannot modify or schedule them.
+  if(typeof isClient === 'function' && isClient()){
+    // Hide the trash/delete button
+    trash.style.display = 'none';
+    // Hide the film (send to filming) button on the front side
+    if(filmBtn){ filmBtn.style.display = 'none'; }
+    // Hide the schedule (+ Calendar) button on the back side
+    if(schedBtn){ schedBtn.style.display = 'none'; }
+    // Disable all input and textarea fields so content is read‑only
+    card.querySelectorAll('textarea.input, input.input, input[type="file"][data-field]').forEach(inp=>{
+      inp.setAttribute('disabled', 'disabled');
+    });
+  }
+  return card;
+}
+
+// Create repeated copies of a task according to a simple recurrence rule.
+// repeat can be 'daily', 'weekly' or 'monthly'. This function
+// schedules a handful of future occurrences (up to 6) using the same
+// start time and duration. It respects the client's schedule by
+// calling placeTask() on each occurrence and pushes the tasks into
+// state.tasks. Recurring tasks are given new IDs.
+function scheduleRecurringTasks(baseTask, repeat){
+  const startDate = baseTask.date;
+  const maxOccurrences = 6;
+  for(let i=1; i<=maxOccurrences; i++){
+    let nextDate;
+    if(repeat === 'daily'){
+      nextDate = fmtDate(addDays(startDate, i));
+    } else if(repeat === 'weekly'){
+      nextDate = fmtDate(addDays(startDate, 7*i));
+    } else if(repeat === 'monthly'){
+      // approximate months as 28 days for simplicity
+      nextDate = fmtDate(addDays(startDate, 28*i));
+    } else {
+      continue;
+    }
+    const t = {...baseTask};
+    t.id = uid();
+    t.date = nextDate;
+    placeTask(t.date, t);
+    state.tasks.push(t);
+  }
+}
+
+// Schedule all project tasks for a client across the requested number of
+// months. This helper ensures every task is created and added to
+// `state.tasks` so they appear on the calendar. It no longer skips
+// phases when duplicates exist; instead it always appends tasks for
+// each month. The assignment to employees is handled via
+// `placeTask()`, which finds an available worker based on skills and
+// capacity. After scheduling, the state is saved.
+function scheduleClientMonths(client, startMonthIndex=0, months=null){
+  const meta = PKG_META[client.package||"none"] || {months:0, scriptHrs:0, filmHrs:0, photoHrs:0, influencers:0};
+  // Determine how many months of work to schedule. When `months` is
+  // null/undefined we use the package baseline (`meta.months`). An explicit
+  // value of 0 means no additional months beyond the baseline. See payment
+  // scheduling logic for details.
+  const monthsCount = (months == null) ? meta.months : months;
+  // If there is nothing to schedule and no addons, exit early
+  if(monthsCount<=0 && !client.addons?.website && !client.addons?.email && !client.addons?.phone) return;
+  const baseStart = client.onboard || todayStr();
+  const cId = client.id;
+  // Loop from the requested start month index up to the number of months to schedule.
+  for(let m=startMonthIndex; m<startMonthIndex + monthsCount; m++){
+    // Each phase spans 28 days from the onboarding date. Compute the
+    // absolute start date for this phase.
+    const phaseStart = addDays(baseStart, 28*m);
+    // Kickoff and logins are only scheduled in the first month
+    if(m===0){
+      // Kickoff call: schedule once on the onboard date. Notes include
+      // collecting logins, scheduling calls and sending texts. Assign
+      // only to the owner (client onboarding is handled by the owner).
+      (()=>{
+        const notes = "Kickoff call: review package, sign contracts, collect logins (call & text)";
+        const t = makeTask(cId, "Kickoff", phaseStart, client.start||"09:00", state.durations.kickoff, "N", {meta:{phase:m}, notes});
+        // Force assign to owner for kickoff
+        t.assigneeId = "u-OWNER";
+        placeTask(phaseStart, t);
+        state.tasks.push(t);
+      })();
+    }
+    // Offsets for tasks relative to phase start. We schedule work in a
+    // realistic order: two weeks of scripting, then filming and photo
+    // capture, followed by editing. Influencer confirmation and
+    // shoots happen around the filming period. Delivery occurs near
+    // the end of the month.
+    const twoWeeks = 14;
+    // Scripting: distribute hours starting 2 days after phase start
+    if(meta.scriptHrs>0){
+      let remaining = meta.scriptHrs;
+      let d = addDays(phaseStart, 2);
+      while(remaining>0){
+        const chunk = Math.min(4, remaining);
+        const t = makeTask(cId, "Scripting", d, "09:00", chunk, "S", {meta:{phase:m}});
+        placeTask(d, t);
+        state.tasks.push(t);
+        remaining -= chunk;
+        d = addDays(d,1);
+      }
+    }
+    // Photo capture: scheduled two weeks into the phase
+    if(meta.photoHrs>0){
+      const d = addDays(phaseStart, twoWeeks);
+      const t = makeTask(cId, "Photo capture", d, "09:00", meta.photoHrs, "P", {meta:{phase:m}});
+      placeTask(d, t);
+      state.tasks.push(t);
+    }
+    // Filming: start two weeks into the phase; separate by a day between chunks
+    if(meta.filmHrs>0){
+      let remaining = meta.filmHrs;
+      let d = addDays(phaseStart, twoWeeks);
+      while(remaining>0){
+        const chunk = Math.min(8, remaining);
+        const t = makeTask(cId, "Filming", d, "09:00", chunk, "F", {meta:{phase:m}});
+        placeTask(d, t);
+        state.tasks.push(t);
+        remaining -= chunk;
+        // separate filming days by one day
+        d = addDays(d,2);
+      }
+    }
+    // Editing: start roughly 6 days after filming begins (20 days after phase start). Estimate hours
+    if(meta.filmHrs>0){
+      let editHrs = Math.round((meta.filmHrs/4) * state.durations.editingPer4);
+      editHrs = Math.max(4, editHrs);
+      let remaining = editHrs;
+      let d = addDays(phaseStart, twoWeeks + 6);
+      while(remaining>0){
+        const chunk = Math.min(4, remaining);
+        const t = makeTask(cId, "Editing", d, "09:00", chunk, "E", {meta:{phase:m}});
+        placeTask(d, t);
+        state.tasks.push(t);
+        remaining -= chunk;
+        d = addDays(d,1);
+      }
+    }
+    // Delivery/Posting: one day after the end of the month
+    if(meta.months>0){
+      const postDay = addDays(phaseStart, 28 + 1);
+      const t = makeTask(cId, "Delivery / Posting", postDay, "09:00", state.durations.posting, "N", {meta:{phase:m}});
+      placeTask(postDay, t);
+      state.tasks.push(t);
+    }
+    // Influencer tasks: find early, confirm and shoot later
+    if(meta.influencers>0){
+      // find at day 1
+      const tFind = makeTask(cId, "Influencer – Find", addDays(phaseStart,1), "09:00", state.durations.influencerFind, "N", {meta:{phase:m}});
+      placeTask(addDays(phaseStart,1), tFind);
+      state.tasks.push(tFind);
+      // confirm at two weeks
+      const tConfirm = makeTask(cId, "Influencer – Confirm", addDays(phaseStart, twoWeeks), "09:00", state.durations.influencerConfirm, "N", {meta:{phase:m}});
+      placeTask(addDays(phaseStart, twoWeeks), tConfirm);
+      state.tasks.push(tConfirm);
+      // schedule shoots starting two days after two weeks
+      let shootDate = addDays(phaseStart, twoWeeks + 2);
+      for(let i=0; i<meta.influencers; i++){
+        const tShoot = makeTask(cId, `Influencer – Shoot ${i+1}`, shootDate, "09:00", state.durations.influencerShoot || 4, "F", {meta:{phase:m}});
+        placeTask(shootDate, tShoot);
+        state.tasks.push(tShoot);
+        shootDate = addDays(shootDate, 1);
+      }
+    }
+  }
+  /*
+   * Payment scheduling
+   *
+   * Explicitly create payment reminder tasks for this client. Payment
+   * reminders occur on the onboarding date and every 14 days thereafter
+   * for each contracted month of work. A package with one or more
+   * months generates two half‑payments per month; a zero‑month package
+   * generates a single lump‑sum payment on the onboarding date.
+   */
+  {
+    // Determine the deal price. Use the client-specific price if set,
+    // otherwise fall back to the default package price. If no price
+    // exists, skip payment scheduling entirely.
+    let price = Number(client.price);
+    if(!price){ price = (state.prices && state.prices[client.package]) || 0; }
+    if(price > 0){
+      // Determine how many months to schedule payments for. When `months` is
+      // null/undefined we use the package baseline; an explicit numeric
+      // value (including 0) schedules that many months. We cap the
+      // schedule at the baseline package months so that extra months
+      // beyond the contract do not generate payments.
+      // Determine how many months to schedule payments for. When the
+      // caller provides `months` (via auto‑scheduling) we schedule that
+      // many additional months starting at `startMonthIndex`. When
+      // `months` is null/undefined (baseline schedule) we schedule the
+      // package's baseline month count. In both cases, we do NOT limit
+      // scheduling by the baseline contract months. This allows
+      // additional months to generate payments. Packages with zero
+      // baseline months (e.g. website) will fall into the lump‑sum case
+      // below.
+      const baselineMonths = meta.months || 0;
+      // Determine how many months of payments to create.  When
+      // months is null/undefined we schedule the package baseline. If
+      // months is zero and this is the first phase (startMonthIndex
+      // === 0), we still need to schedule the baseline months.
+      let monthsToSchedule;
+      if(months == null){
+        monthsToSchedule = baselineMonths;
+      } else if(months === 0 && startMonthIndex === 0){
+        monthsToSchedule = baselineMonths;
+      } else {
+        monthsToSchedule = months;
+      }
+      // Helper to insert payment tasks only if none exist on that date
+      function maybeAddPayment(dateStr, phaseIdx, amount){
+        const exists = state.tasks.some(t => t.clientId === cId && t.name === 'Payment due' && t.date === dateStr);
+        if(exists) return;
+        const paymentTask = makeTask(
+          cId,
+          'Payment due',
+          dateStr,
+          '09:00',
+          0.5,
+          'L',
+          { meta: { phase: phaseIdx, amount: amount, salespersonId: client.salespersonId || null } }
+        );
+        paymentTask.assigneeId = client.salespersonId || null;
+        paymentTask.date = dateStr;
+        state.tasks.push(paymentTask);
+      }
+      if(monthsToSchedule > 0){
+        /*
+         * Schedule bi‑weekly payments. Each package month corresponds
+         * to two payments: one on the phase start (onboard + 28*m)
+         * and one exactly 14 days later. We compute the overall
+         * sequence of payments by multiplying the number of months
+         * to schedule by two. The starting payment index is offset
+         * when startMonthIndex > 0 so that additional months append
+         * seamlessly after existing payments. Each payment uses
+         * meta.phase to record its phase index (floor(paymentIndex/2)).
+         */
+        const half = price / 2;
+        const totalPayments = monthsToSchedule * 2;
+        const startPaymentIndex = startMonthIndex * 2;
+        for(let i = 0; i < totalPayments; i++){
+          const paymentIndex = startPaymentIndex + i;
+          const paymentDate = addDays(baseStart, 14 * paymentIndex);
+          const phaseIdx = Math.floor(paymentIndex / 2);
+          maybeAddPayment(paymentDate, phaseIdx, half);
+        }
+      } else {
+        // For packages with zero baseline months (e.g. website‑only),
+        // create a single lump payment on the onboarding date. When
+        // baselineMonths > 0 but months === 0, we deliberately
+        // schedule zero additional payments and leave baseline
+        // payments untouched (handled above). This avoids duplicate
+        // lump sums when users choose “0 additional months”.
+        if(baselineMonths <= 0){
+          maybeAddPayment(baseStart, startMonthIndex, price);
+        }
+      }
+    }
+  }
+
+  // Website add-on schedule: always schedule once when website is added
+    if(client.addons?.website){
+    const phaseStart = baseStart;
+    // Check if not already scheduled for this client
+    if(!state.tasks.some(t=>t.clientId===cId && t.meta?.phase==='web')){
+      // Spread website work over roughly two weeks. Offsets are in days
+      // relative to the onboarding date.
+      const tasks = [
+        {name:'Website Kickoff meeting', offset:0, dur:1, type:'N'},
+        {name:'Website Contract', offset:0, dur:0.5, type:'N'},
+        {name:'Website Plan content date', offset:2, dur:0.25, type:'N'},
+        {name:'Website Content Capture', offset:4, dur:3, type:'P'},
+        {name:'Website Build', offset:7, dur:8, type:'W'},
+        {name:'Website Final Checks', offset:12, dur:1, type:'W'},
+        {name:'Website Send to Owner', offset:13, dur:0.5, type:'N'}
+      ];
+      // Schedule website tasks sequentially on the same dates. We
+      // compute start times per task so they don't overlap. Start at
+      // 09:00 by default and add durations.
+      tasks.forEach(item=>{
+        const date = addDays(phaseStart, item.offset);
+        // determine a start time based on existing website tasks on that day
+        let startTime = '09:00';
+        // find tasks for this client and phase on the same date
+        const dayTasks = state.tasks.filter(tt=>tt.clientId===cId && tt.date===date && tt.meta?.phase==='web');
+        if(dayTasks.length){
+          // compute end of last task
+          const last = dayTasks.reduce((a,b)=>{
+            const t1 = parseFloat(a.start.split(':')[0]) + parseFloat(a.duration);
+            const t2 = parseFloat(b.start.split(':')[0]) + parseFloat(b.duration);
+            return t1>t2?a:b;
+          });
+          const lastEnd = parseFloat(last.start.split(':')[0]) + parseFloat(last.duration);
+          const hrs = Math.floor(lastEnd);
+          const mins = Math.round((lastEnd - hrs) * 60);
+          startTime = String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0');
+        }
+        const t = makeTask(cId, item.name, date, startTime, item.dur, item.type, {meta:{phase:'web'}});
+        placeTask(date, t);
+        state.tasks.push(t);
+      });
+    }
+  }
+  // Email add-on schedule
+  if(client.addons?.email){
+    const phaseStart = baseStart;
+    if(!state.tasks.some(t=>t.clientId===cId && t.meta?.phase==='email')){
+      const tasks = [
+        {name:'Email Setup', offset:2, dur:state.durations.emailSetup, type:'N'},
+        {name:'Email Schedule', offset:6, dur:state.durations.emailSchedule, type:'N'},
+        {name:'Email Report', offset:27, dur:state.durations.emailReport, type:'N'}
+      ];
+      tasks.forEach(item=>{
+        const date = addDays(phaseStart, item.offset);
+        const t = makeTask(cId, item.name, date, '09:00', item.dur, item.type, {meta:{phase:'email'}});
+        placeTask(date, t);
+        state.tasks.push(t);
+      });
+    }
+  }
+  // Phone add-on schedule
+  if(client.addons?.phone){
+    const phaseStart = baseStart;
+    if(!state.tasks.some(t=>t.clientId===cId && t.meta?.phase==='phone')){
+      const date = addDays(phaseStart, 2);
+      const t = makeTask(cId, 'Phone Setup', date, '09:00', state.durations.phoneSetup, 'N', {meta:{phase:'phone'}});
+      placeTask(date, t);
+      state.tasks.push(t);
+    }
+  }
+  save();
+}
+
+/*** UI building helpers ***/
+function openModal(html, onMount){
+  $("#modal").innerHTML = html;
+  $("#modalBackdrop").style.display = "flex";
+  onMount && onMount();
+  // Allow closing the modal by clicking on the backdrop (outside the modal).
+  const backdrop = document.getElementById('modalBackdrop');
+  if(backdrop){
+    // Clear any previous click handler to avoid stacking closures
+    backdrop.onclick = (ev) => {
+      if(ev.target === backdrop){
+        closeModal();
+      }
+    };
+  }
+}
+function closeModal(){
+  $("#modalBackdrop").style.display = "none";
+  // Remove backdrop click handler to prevent leaks when reopened.
+  const backdrop = document.getElementById('modalBackdrop');
+  if(backdrop){ backdrop.onclick = null; }
+}
+
+/*** OVERVIEW ***/
+function renderOverview(){
+  const cont = document.createElement("div");
+
+  // Auto‑approve any scheduled content posts whose date has passed and that
+  // have not yet been explicitly approved or rejected. This ensures
+  // clients cannot block scheduled posts by never responding. Only
+  // perform this check once per render and persist changes.
+  try{
+    const todayDate = parseDate(todayStr());
+    let changed = false;
+    Object.values(state.clients).forEach(cl => {
+      if(cl.content){
+        cl.content.forEach(p => {
+          if(!('approved' in p)){
+            const d = parseDate(p.date);
+            if(d < todayDate){
+              p.approved = true;
+              changed = true;
+            }
+          }
+        });
+      }
+    });
+    if(changed) save(false);
+  }catch(e){}
+
+  // Insert an overdue tasks notice at the top of the overview when any tasks
+  // across all clients are past due. Filter by the currently selected
+  // assignee (Team, owner or a specific user) to respect the "view as"
+  // setting. For team view or owner, show all overdue tasks.
+  try{
+    const today = parseDate(todayStr());
+    const assignee = visibleAssigneeId();
+    const cid = currentClientId();
+    const overdueAll = state.tasks.filter(t => {
+      if(parseDate(t.date) >= today) return false;
+      // If viewing a specific assignee, only count tasks assigned to them or unassigned
+      if(assignee && t.assigneeId !== assignee) return false;
+      // If logged in as a client, only consider tasks belonging to that client
+      if(cid && t.clientId !== cid) return false;
+      return true;
+    });
+    if(overdueAll.length > 0){
+      const note = document.createElement('div');
+      note.className = 'card';
+      note.style.background = 'rgba(255, 91, 91, 0.2)';
+      note.style.border = '1px solid var(--danger)';
+      note.style.color = 'var(--danger)';
+      note.style.padding = '8px 12px';
+      note.style.marginBottom = '12px';
+      note.style.borderRadius = 'var(--radius)';
+      const list = overdueAll.slice(0,5).map(t=>`${state.clients[t.clientId]?.name||''} • ${t.name} (${t.date})`).join(', ');
+      const more = overdueAll.length > 5 ? ` and ${overdueAll.length-5} more` : '';
+      note.innerHTML = `<strong>${overdueAll.length} overdue task${overdueAll.length!==1?'s':''}</strong>: ${list}${more}`;
+      cont.appendChild(note);
+    }
+  } catch(e){}
+
+  // Widgets
+  const widgets = document.createElement("div");
+  widgets.className = "grid3";
+  // Clients this week
+  const clientsThisWeek = (()=>{
+    const now = new Date();
+    const start = fmtDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+    const end = fmtDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()+7));
+    // For clients, only show their own entry in the list. For staff, show all clients.
+    let list = Object.values(state.clients);
+    const cid = currentClientId();
+    if(cid){
+      const c = state.clients[cid];
+      list = c ? [c] : [];
+    }
+    const items = list.map(c=>{
+      const startDate = parseDate(c.onboard);
+      const today = new Date();
+      const daysSince = Math.floor((today - startDate)/86400000);
+      const rem = daysSince % 28;
+      const left = 28 - rem;
+      return {name:c.name, nextIn:left};
+    });
+    return items.length ? items.map(it=>`<div class="row"><div class="chip" style="background:#18203a">${it.name}</div><div class="small">${it.nextIn}d left</div></div>`).join("")
+                        : `<div class="small">No clients</div>`;
+  })();
+    const weeklyList = (()=>{
+    const now = new Date();
+    const start = fmtDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+    const end = fmtDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()+7));
+    // When logged in as a client, restrict weekly tasks to that client. Use the
+    // assignee filter to respect the current view setting. If cid is null, show all clients.
+    const wTasks = weeklyTasks(start, end, visibleAssigneeId()).filter(t => {
+      const cid2 = currentClientId();
+      return !cid2 || t.clientId === cid2;
+    });
+    return wTasks.length ? wTasks.map(t=>{
+      return `<div class="task" onclick="handleTaskRowClick(event,'${t.id}')">
+        <div class="dot" style="background:${clientColor(t.clientId)}"></div>
+        <div class="name">${state.clients[t.clientId]?.name} • ${t.name}</div>
+        <div class="meta">${t.date}</div>
+        <div class="assignee">${state.users[t.assigneeId]?.name||"Unassigned"}</div>
+        <div class="actions">
+          <div class="iconbtn ok" title="Done" onclick="archiveTask('${t.id}')">✓</div>
+          <div class="iconbtn" title="More" onclick="showTaskMenu(event,'${t.id}')">…</div>
+        </div>
+      </div>`;
+    }).join("") : `<div class="small">No tasks</div>`;
+  })();
+    const todayList = (()=>{
+    const cid2 = currentClientId();
+    const list = tasksOnDate(todayStr(), cid2, visibleAssigneeId());
+    return list.length ? list.map(t=>{
+      return `<div class="task" onclick="handleTaskRowClick(event,'${t.id}')">
+        <div class="dot" style="background:${clientColor(t.clientId)}"></div>
+        <div class="name">${state.clients[t.clientId]?.name} • ${t.name}</div>
+        <div class="meta">~${t.duration}h</div>
+        <div class="actions">
+          <div class="iconbtn ok" title="Done" onclick="archiveTask('${t.id}')">✓</div>
+          <div class="iconbtn" title="More" onclick="showTaskMenu(event,'${t.id}')">…</div>
+        </div>
+      </div>`;
+    }).join("") : `<div class="small">No tasks</div>`;
+  })();
+
+  widgets.innerHTML = `
+    <div class="card"><h3>Clients this week</h3>${clientsThisWeek}</div>
+    <div class="card"><h3>Weekly tasks</h3><div class="list">${weeklyList}</div></div>
+    <div class="card"><h3>Today</h3><div class="list">${todayList}</div></div>
+  `;
+  cont.appendChild(widgets);
+
+  // If a client is logged in, provide a Work/Content toggle for the
+  // overview calendar. This allows clients to switch between their
+  // production tasks and scheduled social media posts just like on the
+  // individual client page. The selection is persisted in the
+  // global clientViewModes object keyed by client id.
+  const ovClientId = currentClientId();
+  let ovMode = 'work';
+  if(ovClientId){
+    ovMode = clientViewModes[ovClientId] || 'work';
+    const toggleRow = document.createElement('div');
+    toggleRow.className = 'row';
+    toggleRow.style.justifyContent = 'center';
+    toggleRow.style.marginBottom = '8px';
+    toggleRow.innerHTML = `
+      <div class="chips" id="overviewCalMode">
+        <div class="chip ${ovMode==='work'?'active':''}" data-mode="work" onclick="switchOverviewMode('work')">Work</div>
+        <div class="chip ${ovMode==='content'?'active':''}" data-mode="content" onclick="switchOverviewMode('content')">Content</div>
+      </div>
+    `;
+    cont.appendChild(toggleRow);
+  }
+
+  // Calendar (current month only)
+  const cal = document.createElement("div");
+  cal.className="calendar";
+  // Initialise the overview calendar based on the override date. When
+  // state.todayOverride is set via Settings, parseDate(todayStr())
+  // returns a Date object representing that override; otherwise it
+  // falls back to the current system date. Using this value
+  // consistently ensures the highlighted day and month navigation
+  // align with the user's selected date.
+  const now = parseDate(todayStr());
+  let viewYear = now.getFullYear();
+  let viewMonth = now.getMonth();
+  // Build a calendar skeleton with a days‑of‑week header. The header
+  // shows Sun–Sat across seven columns before the month grid so users can
+  // orient themselves easily.
+  cal.innerHTML = `
+    <div class="cal-header">
+      <div class="hstack">
+        <div class="title" id="calTitle">${MONTHS[viewMonth]} ${viewYear}</div>
+      </div>
+      <div class="hstack">
+        <button class="btn small ghost" id="prevM">‹</button>
+        <button class="btn small ghost" id="nextM">›</button>
+      </div>
+    </div>
+    <div class="cal-days">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div>${d}</div>`).join('')}</div>
+    <div class="cal-grid" id="calGrid"></div>
+  `;
+  cont.appendChild(cal);
+
+  function draw(){
+    const grid = $("#calGrid", cal);
+    grid.innerHTML = "";
+    const days = monthMatrix(viewYear, viewMonth);
+    days.forEach(d=>{
+      const dateStr = fmtDate(d);
+      const cell = document.createElement("div");
+      cell.className = "cal-cell";
+      // Highlight today based on the user‑defined date override. Use
+      // todayStr() instead of the system date to respect any
+      // overrides set in Settings. Without this change the calendar
+      // always highlights the actual current date, ignoring the
+      // override and causing an off‑by‑one highlight when the
+      // timezone or override differs.
+      if(todayStr()===dateStr) cell.classList.add("today");
+      // show only this month
+      if(d.getMonth()!==viewMonth){
+        cell.style.visibility="hidden";
+      }
+      cell.dataset.date = dateStr;
+      cell.innerHTML = `<div class="d">${d.getDate()}</div>`;
+
+      // Determine current mode for clients (work vs content). For
+      // employees and owners, mode is always work. When in content
+      // mode, show scheduled content posts instead of production tasks.
+      const cid2 = currentClientId();
+      const mode = cid2 ? (clientViewModes[cid2] || 'work') : 'work';
+      if(cid2 && mode === 'content'){
+        // Build content post cards for this date
+        const posts = (state.clients[cid2]?.content) || [];
+        const postsForDay = posts.filter(p => p.date === dateStr);
+        postsForDay.forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'task';
+          div.draggable = false;
+          div.innerHTML = `<div class="dot" style="background:${clientColor(cid2)}"></div>
+            <div class="name">${state.clients[cid2]?.name} • ${p.title || p.type.charAt(0).toUpperCase()+p.type.slice(1)}</div>
+            <div class="meta">${p.type}</div>`;
+          // Clicking a content post opens a preview modal for approval. Use
+          // viewContentPost to display the final deliverable and approve/reject.
+          div.onclick = (ev) => {
+            ev.stopPropagation();
+            viewContentPost(cid2, p);
+          };
+          cell.appendChild(div);
+        });
+      } else {
+        // Show work/production tasks. Pass cid2 to restrict tasks to the
+        // client when logged in as a client. Otherwise pass null to
+        // include all clients.
+        const dayTasks = tasksOnDate(dateStr, cid2 || null, visibleAssigneeId());
+        dayTasks.forEach(t=>{
+          const div = document.createElement("div");
+          div.className="task";
+          div.draggable=true;
+          div.ondragstart=(ev)=>{ ev.dataTransfer.setData("text/plain", t.id); };
+          div.innerHTML = `<div class="dot" style="background:${clientColor(t.clientId)}"></div>
+            <div class="name">${state.clients[t.clientId]?.name} • ${t.name}</div>
+            <div class="meta">${t.start} • ~${t.duration}h</div>
+            <div class="assignee">${state.users[t.assigneeId]?.name||'Unassigned'}</div>
+            <div class="actions"><div class="iconbtn ok" title="Done">✓</div><div class="iconbtn" title="More">…</div></div>`;
+          // archive on checkmark
+          $(".iconbtn.ok",div).onclick = () => archiveTask(t.id);
+          // options menu on ellipsis
+          const icons = div.querySelectorAll('.iconbtn');
+          if(icons[1]){
+            icons[1].onclick = (ev) => showTaskMenu(ev, t.id);
+          }
+        // clicking the main body of a task opens the appropriate popup.  If the
+        // user clicks on an action icon (done/more) then do not intercept.
+        // Previously influencer tasks only triggered a popup for "confirm" or
+        // "shoot"; broaden the check so any task containing "influencer"
+        // opens the influencer form (e.g. "Influencer – Find").
+        div.onclick = (ev) => {
+            if(ev.target.closest('.iconbtn')) return;
+            const name = (t.name||'').toLowerCase();
+            if(name.includes('influencer')){
+              viewInfluencerTask(t.id);
+            } else if(name.includes('film')){
+              viewFilmingCards(t.id);
+            } else if(name.includes('photo')){
+              viewPhotoCards(t.id);
+            } else if(name.includes('script')){
+              viewScriptingCards(t.id);
+            } else if(name.includes('edit')){
+              viewEditingCards(t.id);
+            } else if(name.includes('email')){
+              viewEmailCards(t.id);
+            }
+          };
+          cell.appendChild(div);
+        });
+      }
+
+      cell.ondragover=(e)=>e.preventDefault();
+      cell.ondrop=(e)=>{
+        const id = e.dataTransfer.getData("text/plain");
+        const t = state.tasks.find(x=>x.id===id); if(!t) return;
+        t.date = cell.dataset.date;
+        placeTask(t.date, t); // re-balance capacity/assignee if needed
+        save(); draw();
+      };
+      grid.appendChild(cell);
+    });
+  }
+  draw();
+  // When a client is logged in, allow switching between work and content
+  // modes by clicking the chips. Update the global clientViewModes and
+  // re‑render the dashboard. Use the same client id used when building
+  // the toggle earlier.
+  if(ovClientId){
+    const chipContainer = $("#overviewCalMode");
+    if(chipContainer){
+      chipContainer.onclick = (e)=>{
+        const m = e.target.closest('.chip')?.dataset.mode;
+        if(m && clientViewModes[ovClientId] !== m){
+          clientViewModes[ovClientId] = m;
+          save();
+          render();
+        }
+      };
+    }
+  }
+  $("#prevM", cal).onclick = ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} $("#calTitle", cal).textContent = `${MONTHS[viewMonth]} ${viewYear}`; draw(); };
+  $("#nextM", cal).onclick = ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} $("#calTitle", cal).textContent = `${MONTHS[viewMonth]} ${viewYear}`; draw(); };
+
+  $("#screen").innerHTML = "";
+  $("#screen").appendChild(cont);
+}
+
+/*** edit task modal ***/
+function editTask(id){
+  const t = deepClone(state.tasks.find(x=>x.id===id));
+  if(!t) return;
+  const client = state.clients[t.clientId];
+  openModal(`
+    <h3>Edit task</h3>
+    <div class="row"><div class="kv"><div class="k">Client</div><div>${client?.name||''}</div></div></div>
+    <div class="row"><div class="kv"><div class="k">Name</div><input id="tName" type="text" value="${t.name}"/></div></div>
+    <div class="row"><div class="kv"><div class="k">Date</div><input id="tDate" type="date" value="${t.date}"/></div><div class="kv"><div class="k">Start</div><input id="tStart" type="time" value="${t.start||'09:00'}"/></div><div class="kv"><div class="k">Duration (h)</div><input id="tDur" type="number" step="0.25" placeholder="Duration (h)" value="${t.duration||''}"/></div></div>
+    <div class="row"><div class="kv"><div class="k">Notes</div><textarea id="tNotes" placeholder="Description or notes...">${t.notes||''}</textarea></div></div>
+    <div class="row"><div class="kv"><div class="k">Assignee</div><select id="tWho">${Object.values(state.users).map(u=>`<option value="${u.id}" ${u.id===t.assigneeId?'selected':''}>${u.name}</option>`).join("")}</select></div></div>
+    <div class="row right"><button class="btn secondary" id="cancel">Cancel</button><button class="btn" id="saveT">Save</button></div>
+  `, ()=>{
+    $("#cancel").onclick=closeModal;
+    $("#saveT").onclick=()=>{
+      const real = state.tasks.find(x=>x.id===id);
+      real.name=$("#tName").value;
+      real.date=$("#tDate").value;
+      real.start=$("#tStart").value;
+      real.duration=Number($("#tDur").value);
+      real.assigneeId=$("#tWho").value;
+      real.notes = $("#tNotes").value;
+      save(); closeModal(); render();
+    };
+  });
+}
+
+// Assign a task to a different employee. Opens a simple modal with a
+// select listing all non-sales users. On save, updates the task's
+// assigneeId and re-renders the dashboard.
+function assignTask(taskId){
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t) return;
+  const options = Object.values(state.users)
+    .filter(u=>u.role!=='sales')
+    .map(u=>`<option value="${u.id}" ${u.id===t.assigneeId?'selected':''}>${u.name}</option>`).join('');
+  openModal(`
+    <h3>Assign task</h3>
+    <div class="row wrap"><label style="flex:1;min-width:140px">Assignee
+      <select id="assignSelect">${options}</select>
+    </label></div>
+    <div class="row right" style="margin-top:12px">
+      <button class="btn secondary" id="aCancel">Cancel</button>
+      <button class="btn" id="aSave">Assign</button>
+    </div>
+  `, ()=>{
+    $("#aCancel").onclick = closeModal;
+    $("#aSave").onclick = ()=>{
+      const val = $("#assignSelect").value;
+      t.assigneeId = val;
+      save(); closeModal(); render();
+    };
+  });
+}
+
+// Display all deliverables attached to a filming task. Opens a modal
+// listing each draft assigned to this filming task. Allows the user
+// to push individual drafts to the content calendar. Draft details
+// (idea, script, example) are displayed read‑only for reference. When
+// pushing a draft, it is marked used and removed from the task's
+// meta.cards array. The view re-renders after closing.
+function viewFilmingCards(taskId){
+  const t = state.tasks.find(x=>x.id===taskId);
+  // Only handle filming tasks here. Photo capture tasks are handled by
+  // viewPhotoCards. Use a case‑insensitive check so names like
+  // "Filming Day 2" are recognised. If no deliverables are attached,
+  // notify the user.
+  if(!t || !/filming/i.test(t.name) || !t.meta || !t.meta.cards || !t.meta.cards.length){
+    alert('No deliverables attached to this production task. Use "Send to filming" on a draft first.');
+    return;
+  }
+  const client = state.clients[t.clientId];
+  // Build card container
+  const frag = document.createElement('div');
+  frag.style.display = 'flex';
+  frag.style.flexWrap = 'wrap';
+  frag.style.gap = '20px';
+  frag.style.alignItems = 'start';
+  t.meta.cards.forEach(info => {
+    const drafts = client.drafts && client.drafts[info.type] ? client.drafts[info.type] : [];
+    const draft = drafts.find(d => d.id === info.id);
+    if(!draft) return;
+    // Provide actions to allow scheduling and deletion
+    const actions = {
+      onDelete: (d) => {
+        // Unschedule this draft from the production task but keep it in
+        // the client's drafts. Do not delete the draft entirely.
+        d.scheduledToFilm = false;
+        if(t.meta && Array.isArray(t.meta.cards)){
+          t.meta.cards = t.meta.cards.filter(c => c.id !== d.id);
+        }
+        save();
+        // remove card visually
+        if(window.cardMap){
+          const el = cardMap.get(d.id);
+          if(el) el.remove();
+        }
+      },
+      onSchedule: (d) => {
+        // Post to calendar and then unschedule from production.
+        assignDraftToCalendar(client, info.type, d);
+        d.used = true;
+        d.scheduledToFilm = false;
+        if(t.meta && Array.isArray(t.meta.cards)){
+          t.meta.cards = t.meta.cards.filter(c => c.id !== d.id);
+        }
+        save();
+        // remove card visually
+        if(window.cardMap){
+          const el = cardMap.get(d.id);
+          if(el) el.remove();
+        }
+      },
+      // disable filming button in production view
+      onFilm: null
+    };
+    const card = createDeliverableCard(client, info.type, draft, actions);
+    // Hide the film button since we are already in production
+    const filmBtn = card.querySelector('button[data-action="film"]');
+    if(filmBtn){ filmBtn.style.display = 'none'; }
+    // Keep a map from draft id to element for removal
+    if(!window.cardMap) window.cardMap = new Map();
+    window.cardMap.set(draft.id, card);
+    frag.appendChild(card);
+  });
+  openModal(`
+    <h3>${t.name} deliverables</h3>
+    <div id="fcCards" style="max-height:70vh; overflow-y:auto; overflow-x:visible"></div>
+    <div class="row right" style="margin-top:12px"><button class="btn secondary" id="fcClose">Close</button></div>
+  `, () => {
+    const modal = document.getElementById('modal');
+    if(modal){
+      modal.style.maxWidth = '90vw';
+    }
+    const container = document.getElementById('fcCards');
+    if(container){
+      container.appendChild(frag);
+    }
+    document.getElementById('fcClose').onclick = closeModal;
+  });
+}
+
+// Display deliverables for photo capture tasks. Shows two tabs
+// (Photos and Carousels) so the user can switch between types. Allows
+// unscheduling drafts from the task or scheduling them to the content
+// calendar. Drafts remain in the client's library when removed from
+// the production task.
+function viewPhotoCards(taskId){
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t || !/photo/i.test(t.name) || !t.meta || !t.meta.cards || !t.meta.cards.length){
+    alert('No deliverables attached to this production task. Use "Send to filming" on a draft first.');
+    return;
+  }
+  const client = state.clients[t.clientId];
+  let currentFilter = 'photo';
+  // Build header with toggles
+  openModal(`
+    <h3>${t.name} deliverables</h3>
+    <div class="tabs" id="photoTabs">
+      <div class="tab active" data-filter="photo">Photos</div>
+      <div class="tab" data-filter="carousel">Carousels</div>
+    </div>
+    <div id="pcCards" style="max-height:70vh; overflow-y:auto; overflow-x:visible; display:flex; flex-wrap:wrap; gap:20px; align-items:start"></div>
+    <div class="row right" style="margin-top:12px"><button class="btn secondary" id="pcClose">Close</button></div>
+  `, () => {
+    const modal = document.getElementById('modal');
+    if(modal){ modal.style.maxWidth = '90vw'; }
+    const tabs = document.getElementById('photoTabs');
+    const container = document.getElementById('pcCards');
+    function renderCards(){
+      container.innerHTML = '';
+      if(!window.cardMap) window.cardMap = new Map();
+      t.meta.cards.forEach(info => {
+        if(info.type !== currentFilter) return;
+        const drafts = (client.drafts && client.drafts[info.type]) ? client.drafts[info.type] : [];
+        const draft = drafts.find(d => d.id === info.id);
+        if(!draft) return;
+        const actions = {
+          onDelete: (d) => {
+            d.scheduledToFilm = false;
+            t.meta.cards = t.meta.cards.filter(c => c.id !== d.id);
+            save();
+            renderCards();
+          },
+          onSchedule: (d) => {
+            assignDraftToCalendar(client, info.type, d);
+            d.used = true;
+            d.scheduledToFilm = false;
+            t.meta.cards = t.meta.cards.filter(c => c.id !== d.id);
+            save();
+            renderCards();
+          },
+          onFilm: null
+        };
+        const card = createDeliverableCard(client, info.type, draft, actions);
+        // hide film button (not relevant)
+        const filmBtn = card.querySelector('button[data-action="film"]');
+        if(filmBtn){ filmBtn.style.display = 'none'; }
+        container.appendChild(card);
+      });
+    }
+    renderCards();
+    // tab click
+    tabs.querySelectorAll('.tab').forEach(tab => {
+      tab.onclick = () => {
+        tabs.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        renderCards();
+      };
+    });
+    document.getElementById('pcClose').onclick = closeModal;
+  });
+}
+
+// Display deliverables for scripting tasks. Provide filters for videos,
+// photos and carousels similar to the editing view. Allows drafts to be
+// unscheduled from the task or scheduled to the content calendar.
+function viewScriptingCards(taskId){
+  // Show all drafts for the client when scripting a task. In the original
+  // implementation only drafts that were already scheduled to filming
+  // (stored in t.meta.cards) were displayed. This prevented writers
+  // from scripting deliverables that had not yet been sent to film. The
+  // updated version lists every draft of the selected type, regardless
+  // of whether it is scheduled to a production task. Writers can send
+  // drafts to filming, schedule them to the calendar, or delete them
+  // directly from this view.
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t || !/script/i.test(t.name)){
+    alert('Not a scripting task.');
+    return;
+  }
+  const client = state.clients[t.clientId];
+  if(!client){ alert('Client not found.'); return; }
+  // Ensure drafts exist before showing the modal
+  ensureDrafts(client);
+  let currentFilter = 'video';
+  openModal(`
+    <h3>${t.name} deliverables</h3>
+    <div class="tabs" id="scrTabs">
+      <div class="tab active" data-filter="video">Videos</div>
+      <div class="tab" data-filter="photo">Photos</div>
+      <div class="tab" data-filter="carousel">Carousels</div>
+    </div>
+    <div id="scrCards" style="max-height:70vh; overflow-y:auto; overflow-x:visible; display:flex; flex-wrap:wrap; gap:20px; align-items:start"></div>
+    <div class="row right" style="margin-top:12px"><button class="btn secondary" id="scrClose">Close</button></div>
+  `, () => {
+    const modal = document.getElementById('modal');
+    if(modal){ modal.style.maxWidth = '90vw'; }
+    const tabs = document.getElementById('scrTabs');
+    const container = document.getElementById('scrCards');
+    function renderCards(){
+      container.innerHTML = '';
+      // Build a list of drafts for the current filter type. Always show
+      // every draft, regardless of whether it has been scheduled to a
+      // production task. Writers need access to unscheduled drafts in
+      // order to write scripts.
+      const drafts = (client.drafts && client.drafts[currentFilter]) ? client.drafts[currentFilter] : [];
+      drafts.forEach(d => {
+        const actions = {
+          // Remove a draft from any associated production task and mark it
+          // as unscheduled. Deleting does not remove the draft from the
+          // drafts list; it simply clears its association with filming
+          // tasks so it can be reassigned later.
+          onDelete: (draft) => {
+            // Clear scheduledToFilm flag
+            draft.scheduledToFilm = false;
+            // Remove from all task meta.cards arrays
+            if(state.tasks){
+              state.tasks.forEach(tsk => {
+                if(tsk.meta && tsk.meta.cards){
+                  tsk.meta.cards = tsk.meta.cards.filter(ci => ci.id !== draft.id);
+                }
+              });
+            }
+            save();
+            renderCards();
+          },
+          // Schedule the draft directly to the content calendar. This
+          // immediately posts the deliverable, marking it as used and
+          // clearing any scheduledToFilm flag. Remove the draft from
+          // production tasks so it does not appear in later phases.
+          onSchedule: (draft) => {
+            assignDraftToCalendar(client, currentFilter, draft);
+            draft.used = true;
+            draft.scheduledToFilm = false;
+            if(state.tasks){
+              state.tasks.forEach(tsk => {
+                if(tsk.meta && tsk.meta.cards){
+                  tsk.meta.cards = tsk.meta.cards.filter(ci => ci.id !== draft.id);
+                }
+              });
+            }
+            save();
+            renderCards();
+          },
+          // Send the draft to the next available filming task. Writers can
+          // prepare scripts for unscheduled drafts and then send them to
+          // filming directly from this view.
+          onFilm: (draft) => {
+            assignDraftToFilming(client, currentFilter, draft);
+            save();
+            renderCards();
+          }
+        };
+        const card = createDeliverableCard(client, currentFilter, d, actions);
+        // Film button remains visible for scripting tasks; no need to hide
+        container.appendChild(card);
+      });
+    }
+    renderCards();
+    tabs.querySelectorAll('.tab').forEach(tab => {
+      tab.onclick = () => {
+        tabs.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        renderCards();
+      };
+    });
+    document.getElementById('scrClose').onclick = closeModal;
+  });
+}
+
+// Display deliverables for editing tasks. Like scripting, this shows
+// tabs for all content types and allows unscheduling or posting to the
+// calendar. The edit view is used after filming when the editor needs
+// to review drafts before finalising.
+function viewEditingCards(taskId){
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t || !/edit/i.test(t.name) || !t.meta || !t.meta.cards || !t.meta.cards.length){
+    alert('No deliverables attached to this production task. Use "Send to filming" on a draft first.');
+    return;
+  }
+  const client = state.clients[t.clientId];
+  let currentFilter = 'video';
+  openModal(`
+    <h3>${t.name} deliverables</h3>
+    <div class="tabs" id="editTabs">
+      <div class="tab active" data-filter="video">Videos</div>
+      <div class="tab" data-filter="photo">Photos</div>
+      <div class="tab" data-filter="carousel">Carousels</div>
+    </div>
+    <div id="editCards" style="max-height:70vh; overflow-y:auto; overflow-x:visible; display:flex; flex-wrap:wrap; gap:20px; align-items:start"></div>
+    <div class="row right" style="margin-top:12px"><button class="btn secondary" id="editClose">Close</button></div>
+  `, () => {
+    const modal = document.getElementById('modal');
+    if(modal){ modal.style.maxWidth = '90vw'; }
+    const tabs = document.getElementById('editTabs');
+    const container = document.getElementById('editCards');
+    function renderCards(){
+      container.innerHTML = '';
+      if(!window.cardMap) window.cardMap = new Map();
+      t.meta.cards.forEach(info => {
+        if(info.type !== currentFilter) return;
+        const drafts = (client.drafts && client.drafts[info.type]) ? client.drafts[info.type] : [];
+        const draft = drafts.find(d => d.id === info.id);
+        if(!draft) return;
+        const actions = {
+          onDelete: (d) => {
+            d.scheduledToFilm = false;
+            t.meta.cards = t.meta.cards.filter(c => c.id !== d.id);
+            save();
+            renderCards();
+          },
+          onSchedule: (d) => {
+            assignDraftToCalendar(client, info.type, d);
+            d.used = true;
+            d.scheduledToFilm = false;
+            t.meta.cards = t.meta.cards.filter(c => c.id !== d.id);
+            save();
+            renderCards();
+          },
+          onFilm: null
+        };
+        const card = createDeliverableCard(client, info.type, draft, actions);
+        // hide film button
+        const filmBtn = card.querySelector('button[data-action="film"]');
+        if(filmBtn){ filmBtn.style.display = 'none'; }
+        container.appendChild(card);
+      });
+    }
+    renderCards();
+    tabs.querySelectorAll('.tab').forEach(tab => {
+      tab.onclick = () => {
+        tabs.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        renderCards();
+      };
+    });
+    document.getElementById('editClose').onclick = closeModal;
+  });
+}
+
+// Display email campaign deliverables for tasks with "email" in the name.
+// When an email-related task is clicked on the calendar, this function
+// presents all email drafts for the associated client. It uses the
+// generic createDeliverableCard helper to render each draft and hides
+// the film button since email campaigns are not sent to filming. The
+// modal allows scheduling the campaign to the calendar or deleting the
+// draft to remove it from production.
+function viewEmailCards(taskId){
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t){ alert('Task not found.'); return; }
+  const client = state.clients[t.clientId];
+  if(!client){ alert('Client not found.'); return; }
+  // Ensure email drafts exist for this client before rendering
+  ensureDrafts(client);
+  const drafts = (client.drafts && client.drafts.email) ? client.drafts.email : [];
+  openModal(`
+    <h3>${t.name} • Email Campaigns</h3>
+    <div id="emailCards" style="max-height:70vh; overflow-y:auto; display:flex; flex-wrap:wrap; gap:20px; align-items:start"></div>
+    <div class="row right" style="margin-top:12px"><button class="btn secondary" id="emailClose">Close</button></div>
+  `, () => {
+    const container = document.getElementById('emailCards');
+    drafts.forEach((dr, i) => {
+      const actions = {
+        onDelete: (d) => {
+          // mark unscheduled and remove from array
+          d.scheduledToFilm = false;
+          const arr = client.drafts.email;
+          const idx = arr.indexOf(d);
+          if(idx>=0){ arr.splice(idx,1); save(); }
+          // re-render
+          render();
+        },
+        onSchedule: (d) => {
+          assignDraftToCalendar(client, 'email', d);
+          d.used = true;
+          d.scheduledToFilm = false;
+          save();
+          render();
+        },
+        onFilm: null
+      };
+      const card = createDeliverableCard(client, 'email', dr, actions);
+      // Hide the film button for email campaigns
+      const filmBtn = card.querySelector('button[data-action="film"]');
+      if(filmBtn) filmBtn.style.display = 'none';
+      // Set a set/ordinal header: e.g. Set 1 • Email Campaign 1
+      const small = card.querySelector('.small b');
+      if(small){
+        // Determine the set based on meta.months; fallback to 1
+        const meta = PKG_META[client.package || 'none'] || {};
+        const months = Math.max(1, meta.months || 1);
+        const perSet = meta.emailCount || drafts.length || 1;
+        const setIndex = Math.floor(i / perSet);
+        const ordinal = (i % perSet) + 1;
+        small.textContent = `Set ${setIndex+1} • Email Campaign ${ordinal}`;
+      }
+      container.appendChild(card);
+    });
+    document.getElementById('emailClose').onclick = closeModal;
+  });
+}
+
+// Display a simple form for influencer tasks (confirm or shoot). Allows entering
+// an influencer's name and social handle. The data is saved on the task
+// meta so it persists across sessions. Only used for tasks whose name
+// contains "influencer" and either "confirm" or "shoot". The popup is
+// similar to deliverable modals but with a lightweight form.
+function viewInfluencerTask(taskId){
+  // Display a simple form for influencer tasks. This dialog is used
+  // whenever a task name contains "influencer" regardless of the
+  // specific action (find, confirm, shoot, etc.). Previously the
+  // function returned early unless the task contained "confirm" or
+  // "shoot" which meant find tasks never opened a popup. Removing
+  // that restriction allows all influencer tasks to collect and
+  // persist influencer details.
+  const t = state.tasks.find(x => x.id === taskId);
+  if(!t) return;
+  // If this task doesn't mention influencer, exit silently. This guard
+  // prevents non‑influencer tasks from accidentally opening this form.
+  const nameLower = (t.name || '').toLowerCase();
+  if(!nameLower.includes('influencer')) return;
+  // Ensure meta exists
+  if(!t.meta) t.meta = {};
+  // Prefill influencer details. If the task itself has saved values,
+  // use those; otherwise fall back to any details saved on the client.
+  const client = state.clients[t.clientId];
+  const infName = t.meta.influencerName || (client && client.influencerName) || '';
+  const infHandle = t.meta.influencerHandle || (client && client.influencerHandle) || '';
+  openModal(
+    `<h3>${t.name}</h3>
+     <div class="row wrap" style="margin-top:8px">
+       <label style="flex:1;min-width:140px">Influencer name
+         <input id="infName" type="text" value="${infName}" placeholder="Name" style="width:100%"/>
+       </label>
+       <label style="flex:1;min-width:140px">Instagram handle
+         <input id="infHandle" type="text" value="${infHandle}" placeholder="@handle" style="width:100%"/>
+       </label>
+     </div>
+     <div class="row right" style="margin-top:12px">
+       <button class="btn secondary" id="infCancel">Cancel</button>
+       <button class="btn" id="infSave">Save</button>
+     </div>
+    `,
+    () => {
+      const cancel = document.getElementById('infCancel');
+      const saveBtn = document.getElementById('infSave');
+      if(cancel) cancel.onclick = closeModal;
+      if(saveBtn) saveBtn.onclick = () => {
+        const nameVal = document.getElementById('infName').value.trim();
+        const handleVal = document.getElementById('infHandle').value.trim();
+        if(!t.meta) t.meta = {};
+        t.meta.influencerName = nameVal;
+        t.meta.influencerHandle = handleVal;
+        // Propagate influencer details to all influencer tasks for this client.
+        state.tasks.forEach(task => {
+          if(task.clientId === t.clientId && task.name && task.name.toLowerCase().includes('influencer')){
+            if(!task.meta) task.meta = {};
+            task.meta.influencerName = nameVal;
+            task.meta.influencerHandle = handleVal;
+          }
+        });
+        // Store the influencer details on the client to reuse for new tasks
+        if(client){
+          client.influencerName = nameVal;
+          client.influencerHandle = handleVal;
+        }
+        save();
+        // Re-render the dashboard so the updated influencer details
+        // appear on all task popups and lists. Without this, the
+        // changes would only appear when the page refreshes.
+        render();
+        closeModal();
+      };
+    }
+  );
+}
+
+// Display a scheduled content post and allow clients to approve or reject it. When
+// a client clicks on a content post in their calendar, show the final
+// deliverable preview along with the caption/text and a call to action. The
+// modal includes Approve and X buttons. Approving sets post.approved=true;
+// rejecting sets post.approved=false. Posts that reach their scheduled date
+// without a response are auto‑approved when rendering the calendar.
+function viewContentPost(clientId, post){
+  const client = state.clients[clientId];
+  if(!client || !post) return;
+  // Fetch the draft to display final details when available
+  let draft;
+  if(post.draftId){
+    const drafts = client.drafts && client.drafts[post.type] ? client.drafts[post.type] : [];
+    draft = drafts.find(d => d.id === post.draftId);
+  }
+  // Determine preview HTML based on the deliverable type
+  let previewHTML = '';
+  if(post.type === 'email'){
+    const img = (post.image || (draft && draft.finalImage)) ? `<img src="${post.image || draft.finalImage}" style="width:100%;height:auto;border-radius:8px"/>` : '<div style="width:100%;height:180px;background:#2a3047;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px">No image</div>';
+    const headline = post.title || (draft && (draft.finalOffer || draft.offer)) || 'Email';
+    const body = post.body || (draft && (draft.finalEmailText || draft.emailText)) || '';
+    previewHTML = `
+      ${img}
+      <div style="font-weight:bold;font-size:16px;margin-top:12px">${headline}</div>
+      <div style="font-size:14px;margin-top:8px;white-space:pre-wrap">${body}</div>
+      <div style="margin-top:16px"><button class="btn small" style="background:var(--brand);color:#0f1115;padding:6px 12px;border-radius:8px">${headline ? 'Redeem Offer' : 'Call to Action'}</button></div>
+    `;
+  } else if(post.type === 'video' || post.type === 'photo' || post.type === 'carousel'){
+    // For other types, show final video/image if available
+    const media = draft && draft.finalVideo ? `<video src="${draft.finalVideo}" controls style="width:100%;border-radius:8px"></video>` : '';
+    const img = draft && draft.finalImage ? `<img src="${draft.finalImage}" style="width:100%;height:auto;border-radius:8px"/>` : '';
+    const caption = draft && (draft.finalCaption || draft.caption) ? `<div style="margin-top:8px;white-space:pre-wrap">${draft.finalCaption || draft.caption}</div>` : '';
+    previewHTML = `${media || img || '<div style="width:100%;height:180px;background:#2a3047;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px">No preview</div>'}${caption}`;
+  } else {
+    // Default fallback
+    previewHTML = '<div style="width:100%;height:180px;background:#2a3047;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px">No preview</div>';
+  }
+  openModal(
+    `<h3>${client.name} • ${post.title || post.type.charAt(0).toUpperCase()+post.type.slice(1)}</h3>
+     <div style="max-height:60vh;overflow-y:auto">${previewHTML}</div>
+     <div class="row right" style="margin-top:16px">
+       <button class="btn small danger" id="postReject" style="background:var(--danger);color:#0f1115;margin-right:8px">Deny</button>
+       <button class="btn small ok" id="postApprove" style="background:var(--ok);color:#0f1115">Approve</button>
+     </div>
+    `,
+    () => {
+      const rejectBtn = document.getElementById('postReject');
+      const approveBtn = document.getElementById('postApprove');
+      // When a client denies a post, remove it from the content array and
+      // persist the change. This will remove the post from the calendar.
+      if(rejectBtn) rejectBtn.onclick = () => {
+        const clientContent = state.clients[clientId]?.content || [];
+        const idx = clientContent.indexOf(post);
+        if(idx >= 0) clientContent.splice(idx, 1);
+        // Remove reference to draft assignment so it can be rescheduled if needed
+        if(post.draftId && post.type && state.clients[clientId]?.drafts && state.clients[clientId].drafts[post.type]){
+          const dr = state.clients[clientId].drafts[post.type].find(d => d.id === post.draftId);
+          if(dr){ dr.used = false; }
+        }
+        save();
+        closeModal();
+        // Re-render the content page so the calendar stays in context
+        if(currentTab === 'Content') renderContent(); else render();
+      };
+      // When a client approves a post, mark it approved and update UI. Leave
+      // the post in place. Optionally, we could add a flag to style the
+      // post green in the calendar; simply set approved=true and re-render.
+      if(approveBtn) approveBtn.onclick = () => {
+        post.approved = true;
+        save();
+        closeModal();
+        if(currentTab === 'Content') renderContent(); else render();
+      };
+    }
+  );
+}
+
+// Allow clients to request schedule changes for a specific task. Opens a
+// simple modal with a textarea for the client to describe their
+// requested change. The request is stored in state.scheduleRequests
+// so that the owner or representative can review them later.
+function requestScheduleChange(taskId){
+  const t = state.tasks.find(x => x.id === taskId);
+  if(!t) return;
+  const clientId = t.clientId;
+  const client = state.clients[clientId];
+  openModal(
+    `<h3>Request schedule change</h3>
+     <div class="small">${client?.name || ''} • ${t.name} on ${t.date}</div>
+     <textarea id="reqMsg" placeholder="Describe the change you would like to request..." style="width:100%;min-height:100px;margin-top:12px"></textarea>
+     <div class="row right" style="margin-top:12px">
+       <button class="btn secondary" id="reqCancel">Cancel</button>
+       <button class="btn" id="reqSend">Send request</button>
+     </div>
+    `,
+    () => {
+      const cancelBtn = document.getElementById('reqCancel');
+      const sendBtn = document.getElementById('reqSend');
+      if(cancelBtn) cancelBtn.onclick = closeModal;
+      if(sendBtn) sendBtn.onclick = () => {
+        const msg = document.getElementById('reqMsg').value.trim();
+        if(!msg){ alert('Please enter a request.'); return; }
+        state.scheduleRequests ||= [];
+        state.scheduleRequests.push({ id: uid(), clientId, taskId, message: msg, date: todayStr() });
+        save();
+        alert('Schedule change request sent.');
+        closeModal();
+      };
+    }
+  );
+}
+
+// Show a simple options menu for a task. Presents Edit and Assign
+// actions. Delegates to editTask or assignTask accordingly.
+// Show a small contextual menu near the clicked position with Edit and
+// Assign actions. The menu appears where you click and closes when
+// clicking elsewhere. It does not use the modal backdrop, allowing
+// multiple quick interactions without blocking the UI.
+function showTaskMenu(ev, taskId){
+  // Do not show menu to clients; they cannot edit or assign tasks.
+  if(isClient()) return;
+  // Allow calling without an explicit event (e.g. from inline HTML where
+  // `event` may be undefined). Use window.event as fallback and
+  // gracefully compute position based on the clicked element.
+  const e = ev || window.event;
+  if(e) e.stopPropagation();
+  // remove existing menu if any
+  const old = document.getElementById('taskMenu');
+  if(old) old.remove();
+  const menu = document.createElement('div');
+  menu.id = 'taskMenu';
+  menu.style.position = 'absolute';
+  // Determine menu position. If the event has client coordinates use
+  // them, otherwise position relative to the target element's
+  // bounding rectangle.
+  let x = e && typeof e.clientX === 'number' ? e.clientX : null;
+  let y = e && typeof e.clientY === 'number' ? e.clientY : null;
+  if(x === null || y === null){
+    const target = (e && e.target) || document.body;
+    const rect = target.getBoundingClientRect();
+    x = rect.right;
+    y = rect.top;
+  }
+  menu.style.top = (y + 8) + 'px';
+  menu.style.left = (x + 8) + 'px';
+  menu.style.background = getComputedStyle(document.documentElement).getPropertyValue('--panel');
+  menu.style.border = '1px solid ' + getComputedStyle(document.documentElement).getPropertyValue('--border');
+  menu.style.borderRadius = '12px';
+  menu.style.padding = '6px 8px';
+  menu.style.boxShadow = getComputedStyle(document.documentElement).getPropertyValue('--shadow');
+  menu.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px">
+    <button class="btn small" style="width:100%" id="mEdit">Edit</button>
+    <button class="btn small secondary" style="width:100%" id="mAssign">Assign</button>
+  </div>`;
+  document.body.appendChild(menu);
+  document.getElementById('mEdit').onclick = ()=>{ menu.remove(); editTask(taskId); };
+  document.getElementById('mAssign').onclick = ()=>{ menu.remove(); assignTask(taskId); };
+  // click outside to close
+  setTimeout(()=>{
+    const handler = (e)=>{
+      if(!menu.contains(e.target)){ menu.remove(); document.removeEventListener('click',handler); }
+    };
+    document.addEventListener('click', handler);
+  });
+}
+
+// Handle clicking on a task row in the Weekly and Today lists. This
+// helper inspects the task name and opens the appropriate deliverables
+// modal. It ignores clicks on action icons (done/more). Use in
+// onClick handlers for tasks displayed in list form.
+function handleTaskRowClick(ev, taskId){
+  // Ignore clicks on action icons
+  if(ev && ev.target && ev.target.closest('.iconbtn')) return;
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t) return;
+  const name = (t.name||'').toLowerCase();
+  // Always handle influencer tasks first. Previously only "confirm" or
+  // "shoot" influencer tasks triggered the popup which caused tasks
+  // like "Influencer – Find" to fall through. Removing the extra
+  // qualifiers ensures all influencer‑related tasks open the influencer
+  // form.
+  if(name.includes('influencer')){
+    viewInfluencerTask(taskId);
+  } else if(name.includes('film')){
+    viewFilmingCards(taskId);
+  } else if(name.includes('photo')){
+    viewPhotoCards(taskId);
+  } else if(name.includes('script')){
+    viewScriptingCards(taskId);
+  } else if(name.includes('edit')){
+    viewEditingCards(taskId);
+  } else if(name.includes('email')){
+    // For tasks whose names include "email", open the email campaign drafts.
+    viewEmailCards(taskId);
+  }
+}
+
+function archiveTask(id){
+  const tIndex = state.tasks.findIndex(x=>x.id===id);
+  if(tIndex<0) return;
+  const t = state.tasks[tIndex];
+  const cId = t.clientId;
+  state.archives[cId] ||= [];
+  state.archives[cId].push({name:t.name, date:t.date, assigneeId:t.assigneeId, when:todayStr()});
+  state.tasks.splice(tIndex,1);
+  save(); render();
+}
+
+/*** CLIENTS ***/
+var activeClientId = (typeof activeClientId !== 'undefined' && activeClientId !== null) ? activeClientId : (Object.keys((state&&state.clients)||{}))[0] || null;
+function renderClients(){
+  // Robust clients view: chips + add button; no calendar to avoid previous syntax issues
+  const cont = document.createElement("div");
+
+  const ids = Object.keys((state.clients||{}));
+  const chips = document.createElement("div");
+  chips.className = "chips";
+
+  if(ids.length===0){
+    chips.innerHTML = `<div class="small">No clients yet. Add one below.</div>`;
+  } else {
+    chips.innerHTML = ids.map(id => {
+      const c = state.clients[id] || {};
+      const col = c.color || '#4f7cff';
+      const ac = (id === activeClientId) ? 'active' : '';
+      return `<div class="chip ${ac}" data-id="${id}"><span class="dot" style="background:${col}"></span>${c.name||id}</div>`;
+    }).join("");
+  }
+
+  // Add button
+  const addBtn = document.createElement('div');
+  addBtn.className = 'add-btn';
+  addBtn.textContent = 'Add client';
+  addBtn.onclick = () => buildClient && buildClient(false);
+
+  // Top row layout
+  const topRow = document.createElement('div');
+  topRow.className = 'row';
+  topRow.style.justifyContent = 'space-between';
+  topRow.style.alignItems = 'center';
+  topRow.appendChild(chips);
+  topRow.appendChild(addBtn);
+  cont.appendChild(topRow);
+
+  // Placeholder panel for active client basics
+  if (activeClientId && state.clients[activeClientId]) {
+    const c = state.clients[activeClientId];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3>${c.name||activeClientId}</h3>
+      <div class="small">Onboard: ${c.onboard || todayStr()}</div>
+      <div class="small">Package: ${c.package || '—'}</div>
+      <div class="small">Notes: ${c.notes || '—'}</div>
+    `;
+    cont.appendChild(card);
+  }
+
+  $("#screen").innerHTML = '';
+  $("#screen").appendChild(cont);
+
+  // Chip click behavior
+  chips.onclick = (e)=>{
+    const el = e.target.closest(".chip");
+    if(!el) return;
+    const id = el.dataset.id;
+    if(!id) return;
+    activeClientId = id;
+    render();
+  };
+}
+
+/*** SETTINGS ***/
+function renderSettings(){
+  const cont = document.createElement("div");
+  // If logged in as a client, render only account settings for password
+  // changes. Clients cannot adjust durations, prices or commission. They
+  // may update their password here to improve security.
+  if(isClient()){
+    const cid = currentClientId();
+    const client = state.clients[cid];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3>Account Settings</h3>
+      <div class="row wrap">
+        <label style="flex:1;min-width:180px">Business name
+          <input type="text" id="clientName" value="${client?.name||''}" disabled style="width:100%"/>
+        </label>
+      </div>
+      <div class="row wrap" style="margin-top:12px">
+        <label style="flex:1;min-width:180px">Current password
+          <input type="password" id="currPwd" placeholder="Current password" style="width:100%"/>
+        </label>
+        <label style="flex:1;min-width:180px">New password
+          <input type="password" id="newPwd" placeholder="New password" style="width:100%"/>
+        </label>
+        <label style="flex:1;min-width:180px">Confirm new password
+          <input type="password" id="confPwd" placeholder="Confirm new password" style="width:100%"/>
+        </label>
+      </div>
+      <div class="row right" style="margin-top:12px">
+        <button class="btn secondary" id="savePwd">Save</button>
+      </div>
+    `;
+    cont.appendChild(card);
+    // Attach handler to save password
+    setTimeout(() => {
+      const saveBtn = document.getElementById('savePwd');
+      if(saveBtn){
+        saveBtn.onclick = () => {
+          const curr = document.getElementById('currPwd').value;
+          const np = document.getElementById('newPwd').value;
+          const cp = document.getElementById('confPwd').value;
+          if(!client) return;
+          if(curr !== client.password){
+            alert('Current password incorrect.');
+            return;
+          }
+          if(!np || np !== cp){
+            alert('New passwords do not match.');
+            return;
+          }
+          client.password = np;
+          save();
+          alert('Password updated.');
+          // clear fields
+          document.getElementById('currPwd').value = '';
+          document.getElementById('newPwd').value = '';
+          document.getElementById('confPwd').value = '';
+        };
+      }
+    }, 0);
+    // Render and return
+    document.getElementById('screen').innerHTML = '';
+    document.getElementById('screen').appendChild(cont);
+    return;
+  }
+  const box = document.createElement("div"); box.className="card";
+  box.innerHTML = `<h3>Durations (hours)</h3>`;
+  const g = document.createElement("div");
+  // Use a responsive grid with vertical orientation for each duration input. The
+  // extra class helps target custom styles in CSS. Each cell will stack the
+  // label above its input rather than placing them side‑by‑side. This fixes
+  // inconsistent alignment seen with Kickoff and Posting fields.
+  g.className="grid3 durations-grid";
+  const fields = [
+    ["kickoff","Kickoff"],["monthlyCall","MonthlyCall"],
+    ["loginsText","Logins Text"],["loginsCall","Logins Call"],
+    ["influencerFind","Influencer Find"],["influencerConfirm","Influencer Confirm"],
+    ["scriptingHour","Scripting Hour Per Unit"],["editingPer4","Editing Per4"],
+    ["photoPerHour","Photo Per Hour"],["posting","Posting"],
+    ["websitePlan","Website Plan"],["websiteCapture","Website Capture"],["websiteBuild","Website Build"],["websiteQA","Website Qa"],["websitePublish","Website Publish"],["websiteSend","Website Send"],
+    ["emailSetup","Email Setup"],["emailSchedule","Email Schedule"],["emailReport","Email Report"],
+    ["phoneSetup","Phone Setup"]
+  ];
+  g.innerHTML = fields.map(([k,label])=>`
+    <div class="dur-field">
+      <label class="dur-label" for="dur_${k}">${label}</label>
+      <input id="dur_${k}" type="number" step="0.25" value="${state.durations[k]||0}"/>
+    </div>
+  `).join("");
+  box.appendChild(g);
+  const prices = document.createElement("div"); prices.className="section-title"; prices.textContent="Prices";
+  const priceRow = document.createElement("div"); priceRow.className="row wrap";
+  priceRow.innerHTML = `
+    Trial $<input id="p_trial" type="number" value="${state.prices.trial}" style="width:100px"/>
+    Regular $<input id="p_mini" type="number" value="${state.prices.mini}" style="width:100px"/>
+    Medium $<input id="p_medium" type="number" value="${state.prices.medium}" style="width:100px"/>
+    Large $<input id="p_large" type="number" value="${state.prices.large}" style="width:100px"/>
+    Website $<input id="p_website" type="number" value="${state.prices.website}" style="width:100px"/>
+    <button class="btn right" id="saveSet">Save</button>
+  `;
+  box.appendChild(prices);
+  box.appendChild(priceRow);
+  // Commission percentage configuration row. Allows setting the
+  // salesperson commission used for revenue calculations. The value
+  // persists across sessions.
+  const commRow = document.createElement('div'); commRow.className = 'row wrap';
+  commRow.style.marginTop = '12px';
+  commRow.innerHTML = `Commission % <input id="setComm" type="number" step="0.01" value="${state.commissionPct}" style="width:100px"/>`;
+  box.appendChild(commRow);
+  cont.appendChild(box);
+
+  // When logged in as the owner, provide a section to set usernames and
+  // passwords for each client. This allows the owner to manage client
+  // credentials instead of relying on auto‑generated defaults. Each row
+  // displays the client name with editable fields for username and
+  // password. An empty username or password means the client cannot
+  // log in until values are set. This card appears only for the
+  // owner role.
+  if(!isClient() && state.users[state.currentUserId]?.role === 'owner'){
+    const credCard = document.createElement('div'); credCard.className = 'card';
+    let rows = '';
+    Object.keys(state.clients).forEach(cid => {
+      const c = state.clients[cid];
+      rows += `
+        <div class="row wrap" style="gap:12px;margin-bottom:8px;align-items:center">
+          <div style="flex:1;min-width:120px">${c.name}</div>
+          <input id="uname_${cid}" type="text" placeholder="Username" value="${c.username||''}" style="flex:1;min-width:140px"/>
+          <input id="pwd_${cid}" type="text" placeholder="Password" value="${c.password||''}" style="flex:1;min-width:140px"/>
+        </div>`;
+    });
+    credCard.innerHTML = `
+      <h3>Client Credentials</h3>
+      <div id="credRows">${rows}</div>
+      <div class="row right" style="margin-top:12px">
+        <button class="btn secondary" id="saveCreds">Save</button>
+      </div>
+    `;
+    cont.appendChild(credCard);
+    // Attach handler to save updated usernames and passwords
+    setTimeout(() => {
+      const sb = document.getElementById('saveCreds');
+      if(sb){
+        sb.onclick = () => {
+          Object.keys(state.clients).forEach(cid => {
+            const uInput = document.getElementById('uname_'+cid);
+            const pInput = document.getElementById('pwd_'+cid);
+            if(uInput) state.clients[cid].username = uInput.value.trim();
+            if(pInput) state.clients[cid].password = pInput.value.trim();
+          });
+          save();
+          alert('Client credentials saved.');
+        };
+      }
+    }, 0);
+
+    // Create a card for employee credentials. Similar to the client
+    // credentials card, this lists all employees (including the
+    // owner) and allows the owner to update their passwords. The
+    // employees are drawn from state.users. Editing a password here
+    // updates the stored password used on the login screen. Names
+    // cannot be edited through this interface. An empty password
+    // disables login for that employee until a new one is set.
+    const empCard = document.createElement('div'); empCard.className = 'card';
+    let empRows = '';
+    Object.keys(state.users).forEach(uid => {
+      const user = state.users[uid];
+      empRows += `
+        <div class="row wrap" style="gap:12px;margin-bottom:8px;align-items:center">
+          <div style="flex:1;min-width:120px">${user.name}</div>
+          <input id="empPwd_${uid}" type="text" placeholder="Password" value="${user.password||''}" style="flex:1;min-width:140px"/>
+        </div>`;
+    });
+    empCard.innerHTML = `
+      <h3>Employee Credentials</h3>
+      <div id="empCredRows">${empRows}</div>
+      <div class="row right" style="margin-top:12px">
+        <button class="btn secondary" id="saveEmpCreds">Save</button>
+      </div>
+    `;
+    cont.appendChild(empCard);
+    // Handler to persist employee password changes. When the Save
+    // button is clicked, iterate over all users and store the value
+    // from the corresponding input. Trim whitespace to avoid
+    // accidental leading/trailing spaces in the password. After
+    // saving, alert the user for confirmation.
+    setTimeout(() => {
+      const se = document.getElementById('saveEmpCreds');
+      if(se){
+        se.onclick = () => {
+          Object.keys(state.users).forEach(uid => {
+            const pInput = document.getElementById('empPwd_'+uid);
+            if(pInput) state.users[uid].password = pInput.value.trim();
+          });
+          save();
+          alert('Employee credentials saved.');
+        };
+      }
+    }, 0);
+
+    // Date override card. Allows the owner to set an alternate 'today'
+    // date which will be used by the dashboard when scheduling and
+    // displaying tasks. This is useful when the browser clock is
+    // incorrect or when previewing future/past schedules. The card
+    // appears only for non‑client users (primarily the owner).
+    const dateCard = document.createElement('div'); dateCard.className = 'card';
+    dateCard.innerHTML = `
+      <h3>Date Override</h3>
+      <label style="display:block">Today's date
+        <input type="date" id="setToday" value="${state.todayOverride || ''}" />
+      </label>
+      <div class="row right" style="margin-top:12px">
+        <button class="btn secondary" id="saveToday">Save</button>
+      </div>
+    `;
+    cont.appendChild(dateCard);
+    setTimeout(() => {
+      // Initialize the date input with the override or current date
+      const dtInput = document.getElementById('setToday');
+      if(dtInput){
+        dtInput.value = state.todayOverride || todayStr();
+      }
+      const btn = document.getElementById('saveToday');
+      if(btn){
+        btn.onclick = () => {
+          const val = document.getElementById('setToday').value;
+          // Save override. Empty clears the override.
+          state.todayOverride = val || null;
+          save();
+          alert('Today date updated.');
+          // Re-render the dashboard to reflect the new date settings
+          render();
+        };
+      }
+    }, 0);
+  }
+
+  // Backup/restore quick
+  const br = document.createElement("div"); br.className="card";
+  br.innerHTML = `<h3>Backup / Restore</h3><div class="row"><button class="btn secondary" id="bk">Download backup</button><label class="btn ghost inline" for="restoreInput">Restore</label></div>`;
+  cont.appendChild(br);
+
+  // Theme toggle: allow switching between dark and light themes. This
+  // control is inserted after the backup/restore section. The toggle
+  // uses the same switch styling as elsewhere. When changed, it
+  // updates the state's theme and reapplies the new palette.
+  const themeCard = document.createElement('div'); themeCard.className='card';
+  themeCard.innerHTML = `
+    <h3>Appearance</h3>
+    <div class="row" style="align-items:center;gap:12px">
+      <div class="kv"><div class="k">Light theme</div></div>
+      <label class="switch"><input id="themeToggle" type="checkbox"/><span></span></label>
+    </div>
+  `;
+  cont.appendChild(themeCard);
+
+  // Set the toggle based on current theme and wire change handler
+  setTimeout(()=>{
+    const tog = document.getElementById('themeToggle');
+    if(tog){
+      tog.checked = state.theme === 'light';
+      tog.onchange = () => {
+        state.theme = tog.checked ? 'light' : 'dark';
+        save();
+        applyTheme();
+      };
+    }
+  });
+
+  $("#saveSet", box).onclick=()=>{
+    fields.forEach(([k])=> state.durations[k] = Number($("#dur_"+k).value)||0 );
+    state.prices.trial=Number($("#p_trial").value)||state.prices.trial;
+    state.prices.mini=Number($("#p_mini").value)||state.prices.mini;
+    state.prices.medium=Number($("#p_medium").value)||state.prices.medium;
+    state.prices.large=Number($("#p_large").value)||state.prices.large;
+    state.prices.website=Number($("#p_website").value)||state.prices.website;
+    // update commission percentage
+    const cp = document.getElementById('setComm');
+    if(cp){
+      const pct = parseFloat(cp.value);
+      if(!isNaN(pct)) state.commissionPct = pct;
+    }
+    save(); alert("Saved.");
+  };
+  $("#bk", br).onclick=()=>download("marlow_backup.json", JSON.stringify(state,null,2));
+
+  $("#screen").innerHTML=""; $("#screen").appendChild(cont);
+}
+
+/*** backup/restore header buttons ***/
+$("#backupBtn").onclick=()=>download("marlow_backup.json", JSON.stringify(state,null,2));
+$("#restoreInput").addEventListener("change", (ev)=>{
+  const file = ev.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{ state = JSON.parse(reader.result); save(); render(); }
+    catch(e){ alert("Invalid backup."); }
+  };
+  reader.readAsText(file);
+});
+
+/*** render ***/
+function render(){
+  // Ensure a user is logged in before rendering the dashboard. When
+  // no currentUserId is set, show the login screen. Logging in
+  // assigns state.currentUserId and persists it. A logout button
+  // (added in renderTabs) allows the user to clear their session.
+  if(!state.currentUserId){
+    renderLogin();
+    return;
+  }
+  renderTabs();
+  setViewAsOptions();
+  // When a client logs in, automatically schedule tasks and content
+  // for that client if none exist. Some datasets may lack tasks for
+  // the client, leading to a blank calendar. This ensures that
+  // clients always see a populated work and content calendar on first
+  // login. Only schedule once per client by checking existing tasks.
+  try{
+    if(isClient()){
+      const cid = currentClientId();
+      if(cid && !state.tasks.some(t => t.clientId === cid)){
+        // Schedule production tasks and content posts for the client's
+        // package. scheduleClientMonths populates state.tasks and
+        // scheduleContentPosts populates the client.content array. Save
+        // afterwards so the new entries persist.
+        scheduleClientMonths(state.clients[cid]);
+        scheduleContentPosts(state.clients[cid]);
+        save();
+      }
+    }
+  }catch(e){ /* ignore scheduling errors */ }
+  applyTheme();
+  if(currentTab==="Overview") renderOverview();
+  if(currentTab==="Clients") renderClients();
+  if(currentTab==="Content") renderContent();
+  if(currentTab==="Employees") renderEmployees();
+  if(currentTab==="Sales") renderSales();
+  if(currentTab==="Settings") renderSettings();
+}
+
+// Global revenue calendar navigation handler. In some builds the inline
+// navigation buttons for the revenue chart may not have working
+// onclick handlers due to re-rendering or shadowed attributes. To
+// ensure the previous/next arrows always change months, attach a
+// single document-level click listener. When the user clicks the
+// #revPrev or #revNext buttons, adjust state.revYear/state.revMonth
+// accordingly, update the month input and redraw the revenue graphs.
+document.addEventListener('click', (ev) => {
+  const btn = ev.target && ev.target.closest && ev.target.closest('button');
+  if(!btn) return;
+  const id = btn.id;
+  if(id === 'revPrev' || id === 'revNext'){
+    // Determine current year and month from state, falling back to
+    // today's date if not yet set. Using the fallback avoids
+    // NaN/undefined issues when localStorage is empty.
+    let y = state.revYear != null ? state.revYear : new Date().getFullYear();
+    let m = state.revMonth != null ? state.revMonth : new Date().getMonth();
+    if(id === 'revPrev'){
+      m--;
+      if(m < 0){ m = 11; y--; }
+    } else if(id === 'revNext'){
+      m++;
+      if(m > 11){ m = 0; y++; }
+    }
+    state.revYear = y;
+    state.revMonth = m;
+    // Persist month navigation changes to localStorage so the selected
+    // month/year remains consistent across page reloads. Without saving,
+    // the state may revert to the current date on refresh.
+    if(typeof save === 'function') save();
+    // Update month picker value if present. Use zero‑padded month.
+    const rp = document.getElementById('revPicker');
+    if(rp){
+      rp.value = `${y}-${String(m+1).padStart(2,'0')}`;
+    }
+    // Redraw revenue charts to reflect the new month. Avoid full
+    // re-render to preserve event handlers.
+    if(typeof drawRevenue === 'function') drawRevenue();
+    if(typeof drawPersonRevenue === 'function') drawPersonRevenue();
+  }
+});
+
+/***
+ * When a client is viewing the overview calendar they can toggle
+ * between their work (production tasks) and content (scheduled
+ * social posts) calendars. This helper updates the global
+ * clientViewModes object for the current client and triggers a
+ * re‑render. Non‑client users should ignore toggles entirely.
+ *
+ * @param {string} mode Either 'work' or 'content'
+ */
+function switchOverviewMode(mode){
+  // Only clients have an overview mode; employees and owners always
+  // view the work calendar. Bail out if no client is logged in.
+  if(!isClient()) return;
+  const cid = currentClientId();
+  if(!cid) return;
+  if(clientViewModes[cid] !== mode){
+    clientViewModes[cid] = mode;
+    save();
+    // Re‑render only the overview page rather than the entire
+    // dashboard. This preserves the current tab and avoids flicker.
+    renderOverview();
+  }
+}
+
+/*** seed sample data once ***/
+// Disable seeding of sample clients by default. In prior versions
+// this function automatically populated the dashboard with demo
+// clients on first load, which interfered with real workflows and
+// produced confusing revenue when the user wanted a clean slate. To
+// keep the initial state empty, we simply mark the state as
+// "seeded" and do nothing else. The user can then add clients
+// manually. If you wish to restore the old sample clients, reinsert
+// the sample creation logic here.
+(function seed(){
+  if(state._seeded) return;
+  state._seeded = true;
+  save();
+})();
+
+/*** boot ***/
+// === REVENUE REWRITE (month-accurate & tasks-driven) ===
+
+// Get days in the shown month
+function getDaysInMonth(y, m){ return new Date(y, m + 1, 0).getDate(); }
+
+// Try to parse "$1234.56" out of "Payment due ($1234.56)"
+function parseCurrencyFromName(name){
+  const m = /\$([\d,]+(?:\.\d{1,2})?)/.exec(name || '');
+  return m ? Number(m[1].replace(/,/g,'')) : null;
+}
+
+// Amount for a payment task: prefer explicit amount in the title,
+// fall back to half the client's package price.
+function amountForPaymentTask(t){
+  const explicit = parseCurrencyFromName(t.name);
+  if(explicit != null) return explicit;
+  const c = state.clients && state.clients[t.clientId];
+  if(!c) return 0;
+  const pkgPrice = Number(c.price) || (state.prices && state.prices[c.package]) || 0;
+  return pkgPrice / 2;
+}
+
+// --- Payment ledger shim: keep revenue after task completion ---
+(function attachPaymentLedger(){
+  // Only attach once
+  if (window._archivePatched) return;
+  window._archivePatched = true;
+  const originalArchive = window.archiveTask;
+  // Helper: parse amount from title or fallback to half package price (same logic used in revenue)
+  function _parseCurrencyFromName(name){
+    const m = /\$([\d,]+(?:\.\d{1,2})?)/.exec(name || '');
+    return m ? Number(m[1].replace(/,/g,'')) : null;
+  }
+function _amountForPaymentTask(t){
+    const explicit = _parseCurrencyFromName(t.name);
+    if (explicit != null) return explicit;
+    const c = state.clients && state.clients[t.clientId];
+    const pkgPrice = Number(c?.price) || (state.prices && state.prices[c?.package]) || 0;
+    return pkgPrice / 2;
+  }
+  window.archiveTask = function(id){
+    try{
+      const t = state.tasks.find(x => x.id === id);
+      if (t && /payment\s+due/i.test(t.name)) {
+        if (!Array.isArray(state.payments)) state.payments = [];
+        state.payments.push({
+          id: 'paid-' + t.id,
+          taskId: t.id,
+          clientId: t.clientId,
+          // Persist the client name at the time of payment so that the
+          // revenue modal continues to show the correct label even if the
+          // client record is later removed or archived.  Fallback to
+          // 'Client' if no client exists.
+          clientName: (state.clients && state.clients[t.clientId]) ? state.clients[t.clientId].name : 'Client',
+          date: t.date,
+          amount: _amountForPaymentTask(t),
+          // Persist the task name so that the payment retains its label.
+          name: t.name,
+          source: 'task'
+        });
+        save(false);
+      }
+    }catch(e){}
+    // proceed with the original archive behavior
+    if (typeof originalArchive === 'function') originalArchive(id);
+    // redraw revenue to reflect persisted payment
+    try{ if (typeof drawRevenue === 'function') drawRevenue(); }catch(e){}
+  };
+})();
+
+// Build month totals strictly from "Payment due" tasks in that month
+// --- Read scheduled + paid, with a mode toggle ---
+// Add a simple view mode to state if missing: 'both' | 'scheduled' | 'paid'
+if(!state.revMode){ state.revMode = 'both'; save(false); }
+window.setRevMode = (m)=>{ state.revMode = m; save(false); drawRevenue(); };
+
+function collectMonthPayments(y, m){
+  const days = new Date(y, m + 1, 0).getDate();
+  const totals = Array(days).fill(0);
+  const tasksByDay = {};
+  // helper to bucket a record
+  function bump(dateStr, amount, record){
+    const d = toDate(dateStr);
+    if(!d || isNaN(d)) return;
+    if(d.getFullYear() !== y || d.getMonth() !== m) return;
+    const idx = d.getDate() - 1;
+    totals[idx] += amount;
+    (tasksByDay[idx] ||= []).push(record);
+  }
+  const mode = state.revMode || 'both';
+  // Scheduled (unarchived) "Payment due" tasks
+  if(mode !== 'paid'){
+    (state.tasks || []).forEach(t=>{
+      if(!/payment\s+due/i.test(t.name)) return;
+      const explicit = /\$([\d,]+(?:\.\d{1,2})?)/.exec(t.name||'');
+      const c = state.clients && state.clients[t.clientId];
+      const pkgPrice = Number(c?.price) || (state.prices && state.prices[c?.package]) || 0;
+      const amt = explicit ? Number(explicit[1].replace(/,/g,'')) : (pkgPrice/2);
+      bump(t.date, amt, {kind:'scheduled', task:t});
+    });
+  }
+  // Paid ledger (survives after ✓)
+  if(mode !== 'scheduled'){
+    (state.payments || []).forEach(p=>{
+      bump(p.date, Number(p.amount)||0, {kind:'paid', payment:p});
+    });
+  }
+  return { totals, tasksByDay };
+}
+
+// Wire up revenue mode chips selection
+function wireRevMode(){
+  const el = document.getElementById('revMode');
+  if(!el) return;
+  // Assign click handler once
+  el.onclick = (e)=>{
+    const m = e.target.closest('.chip')?.dataset.m;
+    if(m){ setRevMode(m); el.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.m===m)); }
+  };
+  // Reflect current selection
+  el.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.m===(state.revMode||'both')));
+}
+
+// New revenue drawing function – reads only Payment due tasks for the selected month
+function drawRevenue(){
+  const y = (state.revYear != null) ? state.revYear : new Date().getFullYear();
+  const m = (state.revMonth != null) ? state.revMonth : new Date().getMonth();
+  const cvs = document.getElementById('revCanvas');
+  if(!cvs) return;
+  // keep the month picker in sync
+  const picker = document.getElementById('revPicker');
+  if(picker) picker.value = `${y}-${String(m+1).padStart(2,'0')}`;
+  const { totals, tasksByDay } = collectMonthPayments(y, m);
+  // clear and redraw
+  cvs.innerHTML = '';
+  const days = totals.length;
+  // Determine dimensions
+  const H = cvs.clientHeight || 200;
+  const W = cvs.clientWidth || 600;
+  const gap = 2;
+  const barW = Math.max(4, Math.floor((W - 30 - (days - 1) * gap) / days));
+  const max = Math.max(1, ...totals);
+  totals.forEach((v, i) => {
+    const x = 14 + i * (barW + gap);
+    const h = Math.round((v / max) * (H - 36));
+    // bar
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.left = x + 'px';
+    bar.style.width = barW + 'px';
+    bar.style.height = h + 'px';
+    bar.title = `${MONTHS[m]} ${i+1}, ${y}: $${v.toFixed(0)}`;
+    bar.style.position = 'absolute';
+    bar.style.bottom = '12px';
+    bar.style.background = v > 0 ? '#3a77ff' : 'transparent';
+    if(v > 0){
+      bar.style.cursor = 'pointer';
+      bar.onclick = () => {
+        const payments = tasksByDay[i] || [];
+        // Build rows for payment records. Each record may represent a scheduled
+        // task or a paid ledger entry. Use the appropriate fields to label
+        // the client and amount. When we record payments into the ledger we
+        // copy the task name and amount so that historical entries can be
+        // displayed after the underlying task has been archived.
+        const rows = payments.length
+          ? payments.map(rec => {
+              let clientName = 'Client';
+              let name = 'Payment';
+              let amt = 0;
+              let delId = '';
+              let kind = rec.kind || 'scheduled';
+              if(kind === 'scheduled' && rec.task){
+                const tsk = rec.task;
+                clientName = (state.clients && state.clients[tsk.clientId]) ? state.clients[tsk.clientId].name : 'Client';
+                name = tsk.name;
+                amt = amountForPaymentTask(tsk);
+                delId = tsk.id;
+              } else if(kind === 'paid' && rec.payment){
+                const pmt = rec.payment;
+                // Use the persisted clientName from the ledger if present.
+                // Fall back to the current client record, and finally to
+                // 'Client' if no record exists.  This ensures that
+                // payments continue to display the correct client even
+                // after a client is archived or deleted.
+                clientName = pmt.clientName || ((state.clients && state.clients[pmt.clientId]) ? state.clients[pmt.clientId].name : 'Client');
+                // Use the persisted name from the ledger.  If none is
+                // provided, fall back to 'Payment'.
+                name = pmt.name || 'Payment';
+                // Persisted ledger amount is trusted.  Fall back to 0 if
+                // not provided.
+                amt = Number(pmt.amount) || 0;
+                delId = pmt.id;
+              }
+              return `<div class="row wrap" style="align-items:center;justify-content:space-between;margin-bottom:6px">
+                        <span>${clientName} – ${name} • $${amt.toLocaleString()}</span>
+                        <button class="btn small danger" data-delpay="${delId}" data-delkind="${kind}">Delete</button>
+                      </div>`;
+            }).join('')
+          : '<div class="small">No payments</div>';
+        openModal(
+          `<h3>${MONTHS[m]} ${i+1}, ${y} • Payments</h3>
+           ${rows}
+           <div class="row right" style="margin-top:8px"><button class="btn secondary" id="closeRevDay">Close</button></div>`,
+          () => {
+            const closeBtn = document.getElementById('closeRevDay');
+            if(closeBtn) closeBtn.onclick = closeModal;
+            // delete individual payment tasks or ledger entries
+            document.querySelectorAll('[data-delpay]').forEach(btn => {
+              btn.onclick = () => {
+                const id = btn.getAttribute('data-delpay');
+                const kind = btn.getAttribute('data-delkind');
+                if(kind === 'scheduled'){
+                  const idx = state.tasks.findIndex(tt => tt.id === id);
+                  if(idx >= 0){ state.tasks.splice(idx, 1); save(); }
+                } else {
+                  const pIdx = (state.payments || []).findIndex(p => p.id === id);
+                  if(pIdx >= 0){ state.payments.splice(pIdx, 1); save(); }
+                }
+                closeModal();
+                drawRevenue();
+              };
+            });
+          }
+        );
+      };
+    }
+    cvs.appendChild(bar);
+    // value label above bar
+    const val = document.createElement('div');
+    val.className = 'label';
+    val.style.left = x + 'px';
+    val.style.bottom = (h + 18) + 'px';
+    val.style.width = barW + 'px';
+    val.style.textAlign = 'center';
+    val.style.position = 'absolute';
+    val.textContent = v ? `$${v.toFixed(0)}` : '';
+    cvs.appendChild(val);
+    // day number along x‑axis (1..days)
+    const dayLbl = document.createElement('div');
+    dayLbl.style.position = 'absolute';
+    dayLbl.style.left = x + 'px';
+    dayLbl.style.bottom = '0px';
+    dayLbl.style.width = barW + 'px';
+    dayLbl.style.textAlign = 'center';
+    dayLbl.style.fontSize = '9px';
+    dayLbl.style.color = '#6f7893';
+    dayLbl.textContent = String(i + 1);
+    cvs.appendChild(dayLbl);
+  });
+  // monthly total
+  const total = totals.reduce((a,b)=>a+b,0);
+  const rt = document.getElementById('revTotal');
+  if(rt){ rt.textContent = canSeeRevenue() ? `Total: $${total.toLocaleString()}` : ''; }
+}
+
+// Wire up month navigation explicitly (overrides any stale handlers)
+(function wireRevenueNav(){
+  const monthInput = document.getElementById('revPicker');
+  if(monthInput){
+    monthInput.onchange = (e)=>{
+      const val = e.target.value || '';
+      const [yy, mm] = val.split('-').map(Number);
+      if(!isNaN(yy) && !isNaN(mm)){
+        state.revYear = yy;
+        state.revMonth = mm - 1;
+        save();
+        drawRevenue();
+      }
+    };
+  }
+  const prevBtn = document.getElementById('revPrev');
+  const nextBtn = document.getElementById('revNext');
+  if(prevBtn){
+    prevBtn.onclick = () => {
+      let y = state.revYear != null ? state.revYear : new Date().getFullYear();
+      let m = state.revMonth != null ? state.revMonth : new Date().getMonth();
+      m--;
+      if(m < 0){ m = 11; y--; }
+      state.revYear = y;
+      state.revMonth = m;
+      save();
+      const rp = document.getElementById('revPicker');
+      if(rp){ rp.value = `${y}-${String(m+1).padStart(2,'0')}`; }
+      drawRevenue();
+      if(typeof drawPersonRevenue === 'function') drawPersonRevenue();
+    };
+  }
+  if(nextBtn){
+    nextBtn.onclick = () => {
+      let y = state.revYear != null ? state.revYear : new Date().getFullYear();
+      let m = state.revMonth != null ? state.revMonth : new Date().getMonth();
+      m++;
+      if(m > 11){ m = 0; y++; }
+      state.revYear = y;
+      state.revMonth = m;
+      save();
+      const rp = document.getElementById('revPicker');
+      if(rp){ rp.value = `${y}-${String(m+1).padStart(2,'0')}`; }
+      drawRevenue();
+      if(typeof drawPersonRevenue === 'function') drawPersonRevenue();
+    };
+  }
+})();
+
+// Initial draw for revenue
+setTimeout(drawRevenue, 0);
+applyTheme();
+// Reassign tasks to appropriate employees based on their current skills.
+Object.keys(state.users).forEach(id=>{ try{ reassignTasks(id); } catch(e){} });
+render();
+</script>
+<script>
+(function(){ /* demo seed removed for production */ })();
+</script>
+<!-- Ensure minimal state shape exists BEFORE any render -->
+<!-- Minimal state shape BEFORE any render -->
+<script>
+(function(){
+  const s = (window.state = window.state || {});
+  if (!s.users  || typeof s.users  !== 'object') s.users  = {};
+  if (!s.clients|| typeof s.clients!== 'object') s.clients= {};
+  if (!Array.isArray(s.tasks)) s.tasks = [];
+})();
+</script>
+
+<!-- Debounced field sync (no legacy local saver) -->
+<script>
+(function(){
+  const SAVE_DELAY = 250;
+  let t=null;
+  const debouncedSave = ()=>{ clearTimeout(t); t = setTimeout(()=>{ try{ if (typeof save==='function') save(); }catch(_){}} , SAVE_DELAY); };
+  function sync(e){
+    try{
+      const el = e.target; if(!el || !el.id) return;
+      const id = el.id, s = (window.state = window.state || {});
+      if (id.startsWith('empPwd_')){
+        const uid = id.slice(7);
+        (s.users ||= {})[uid] = (s.users[uid]||{});
+        s.users[uid].password = el.value; debouncedSave();
+      } else if (id.startsWith('uname_')){
+        const cid = id.slice(6);
+        (s.clients ||= {})[cid] = (s.clients[cid]||{});
+        s.clients[cid].username = el.value; debouncedSave();
+      } else if (id.startsWith('pwd_')){
+        const cid2 = id.slice(4);
+        (s.clients ||= {})[cid2] = (s.clients[cid2]||{});
+        s.clients[cid2].password = el.value; debouncedSave();
+      }
+    }catch(_){}
+  }
+  document.addEventListener('input',  sync, true);
+  document.addEventListener('change', sync, true);
+})();
+</script>
+
+<!-- Supabase client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Shape guard: keep state valid before each render -->
+<script src="./cloud-shape-guard.v1.js"></script>
+
+<!-- Cloud bridge + hooks -->
+<script src="./cloud-merge-bridge.v2.js"></script>
+<script src="./cloud-hotfix.v2.js"></script>
+<script src="./cloud-post-hooks.v3.js"></script>
+
+<!-- Scheduling / ownership / done -->
+<script src="./cloud-assignment-rules.v3.js"></script>
+<script src="./cloud-task-owner-lock.v1.js"></script>
+<script src="./cloud-task-done-hooks.v1.js"></script>
+
+<!-- Data hardening -->
+<script src="./cloud-user-normalize.v1.js"></script>
+<script src="./cloud-schedule-guards.v1.js"></script>
+<script src="./cloud-task-sanitize.v1.js"></script>
+
+<!-- Month stickiness -->
+<script src="./cloud-calendar-anchor.v4.js"></script>
+
+<!-- Auth helpers -->
+<script src="./cloud-auth-hooks.v1.js"></script>
+<script src="./cloud-auth-restore.v1.js"></script>
+<script src="./cloud-account-hooks.v1.js"></script>
+
+<!-- Optional watcher -->
+<script src="./cloud-client-watcher.js"></script>
+
+<script id="boot-render-shim">
+// Ensure the first paint happens after cloud boot resolves
+(function () {
+  if (window.__bootRenderShimInstalled) return;
+  window.__bootRenderShimInstalled = true;
+  function draw() {
+    try {
+      if (typeof render === 'function') render();
+      else if (typeof renderLogin === 'function') renderLogin();
+    } catch(e) {
+      console.warn('[boot-shim] render failed', e);
+    }
+  }
+  // If bridge exposed the boot promise, wait for it, otherwise draw soon.
+  if (window.__cloudBoot && typeof window.__cloudBoot.then === 'function') {
+    window.__cloudBoot.then(draw).catch(draw);
+  } else {
+    setTimeout(draw, 0);
+  }
+})();
+</script>
+
+</body>
+</html>
