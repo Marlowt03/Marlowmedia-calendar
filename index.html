@@ -914,8 +914,8 @@ async function saveRemoteState(){
   try{
     if(!window.supa){ console.warn('[supa] client missing'); return; }
     const st = window.state || {};
-    const { users, ...rest } = st;
-    const safe = { ...rest, _hasUsers: !!users };
+    const { users, currentUserId, ...rest } = st;
+const safe = { ...rest, _hasUsers: !!users };
     const { error } = await window.supa
       .from('app_state')
       .upsert({ id: window.WORKSPACE_ID, state: safe, updated_at: new Date().toISOString() }, { onConflict: 'id' });
